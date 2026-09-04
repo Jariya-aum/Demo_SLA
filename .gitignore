@@ -97,6 +97,12 @@ ehthumbs.db
 *.pem
 .cdsapirc
 
+# Google service account key (Earth Engine) — ห้าม commit เด็ดขาด repo นี้เป็น public
+ee-*.json
+service-account*.json
+gcp-credentials*.json
+application_default_credentials.json
+
 # ---------------------------------------------------------------
 # VS Code — แชร์เฉพาะค่าที่ใช้ร่วมกันทั้งทีม
 # ---------------------------------------------------------------

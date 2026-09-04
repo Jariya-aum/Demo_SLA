@@ -35,3 +35,6 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Cesium static assets (สร้างใหม่ได้ด้วย npm run copy:cesium)
+public/cesium/

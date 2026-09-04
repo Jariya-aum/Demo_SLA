@@ -1,14 +1,19 @@
-# SLA Prediction  SARIMA · Random Forest · LSTM
+# SLA Prediction — SARIMA · Random Forest · LSTM
 
 พยากรณ์ค่าความผิดปกติของระดับน้ำทะเลรายเดือน (Sea Level Anomaly: SLA) ล่วงหน้า 1 เดือน
 บริเวณอ่าวไทยตอนบน โดยเปรียบเทียบแบบจำลอง 3 ชนิดบนข้อมูล ชุดแบ่งข้อมูล เป้าหมาย
-และ forecast horizon เดียวกัน
+และ forecast horizon เดียวกัน พร้อมเว็บแดชบอร์ดสำหรับแสดงผลเชิงพื้นที่
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.21-orange)
 ![scikit--learn](https://img.shields.io/badge/scikit--learn-1.9-f89939)
 ![statsmodels](https://img.shields.io/badge/statsmodels-0.14-informational)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6)
+![Vite](https://img.shields.io/badge/Vite-8.2-646cff)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688)
 ![License](https://img.shields.io/badge/License-Academic-lightgrey)
+
+**เดโมออนไลน์:** <https://jariya-aum.github.io/Demo_SLA/>
 
 ---
 
@@ -27,6 +32,8 @@
 - [แบบจำลอง](#แบบจำลอง)
 - [การประเมินผล](#การประเมินผล)
 - [ผลลัพธ์ที่ได้](#ผลลัพธ์ที่ได้)
+- [เว็บแดชบอร์ด](#เว็บแดชบอร์ด)
+- [การนำขึ้นระบบ](#การนำขึ้นระบบ)
 - [ข้อควรทราบและข้อจำกัด](#ข้อควรทราบและข้อจำกัด)
 - [เอกสารเพิ่มเติม](#เอกสารเพิ่มเติม)
 - [ผู้พัฒนา](#ผู้พัฒนา)
@@ -38,11 +45,12 @@
 โครงการนี้พัฒนาและเปรียบเทียบแบบจำลองสำหรับพยากรณ์ SLA รายเดือนล่วงหน้า 1 เดือน (t+1)
 ใน 4 สถานีของอ่าวไทยตอนบน โดยใช้ข้อมูลดาวเทียม SLA ร่วมกับตัวแปรบรรยากาศจาก ERA5
 
-งานทั้งหมดอยู่ในโน้ตบุ๊กเดียว:
+โปรเจกต์แบ่งเป็น 2 ส่วนที่ใช้งานแยกกันได้:
 
-```text
-SLA_predict_SARIMA_RF_LSTM.ipynb
-```
+| ส่วน | ที่อยู่ | หน้าที่ |
+|---|---|---|
+| งานวิเคราะห์และสร้างแบบจำลอง | `SLA_predict_SARIMA_RF_LSTM.ipynb` | เตรียมข้อมูล ฝึกและเปรียบเทียบ 3 แบบจำลอง |
+| เว็บแดชบอร์ด | `frontend/` + `backend/` | แสดงตำแหน่งสถานีบนแผนที่ และโครง API สำหรับต่อยอด |
 
 **วัตถุประสงค์**
 
@@ -115,14 +123,36 @@ Rawdata/era5_monthly_1993_2024.nc
 ```text
 Demo_SLA/
 ├── SLA_predict_SARIMA_RF_LSTM.ipynb   # โน้ตบุ๊กหลัก (ทุกขั้นตอน)
-├── requirements.txt                   # รายการไลบรารีแบบตรึงเวอร์ชัน
+├── requirements.txt                   # ไลบรารี Python ของงานวิเคราะห์ (ตรึงเวอร์ชัน)
 ├── README.md
 ├── 02README.md                        # เอกสารรายละเอียดเชิงลึก
 ├── .gitignore
 │
+├── .github/workflows/
+│   └── deploy-pages.yml               # build frontend แล้ว deploy ขึ้น GitHub Pages
+│
 ├── Rawdata/                           # ไฟล์ NetCDF ต้นทาง (ต้องเตรียมเอง)
 │   ├── sla_monthly_1993_2024.nc
 │   └── era5_monthly_1993_2024.nc
+│
+├── frontend/                          # เว็บแดชบอร์ด (Vite + TypeScript)
+│   ├── index.html                     # หน้ารวมลิงก์เดโม
+│   ├── leaflet.html / maplibre.html / cesium.html
+│   ├── vite.config.ts                 # multi-page build + base path
+│   ├── scripts/
+│   │   ├── copy-cesium.mjs            # คัดลอก static asset ของ Cesium
+│   │   └── copy-to-backend.mjs        # คัดลอก dist/ ไป backend/static/
+│   └── src/
+│       ├── main.ts                    # หน้ารวม
+│       ├── stations.ts                # พิกัด 4 สถานี (ใช้ร่วมกันทุกเดโม)
+│       ├── provinces.ts               # ขอบเขตจังหวัดสำหรับ dropdown
+│       ├── style.css
+│       └── demos/                     # โค้ดแผนที่แยกตามไลบรารี
+│
+├── backend/                           # FastAPI (เสิร์ฟ API + web root)
+│   ├── app/main.py
+│   ├── requirements.txt
+│   └── Procfile
 │
 ├── outputs_fair_comparison/           # ผลลัพธ์: ตาราง กราฟ (สร้างอัตโนมัติ)
 │   └── separated_preprocessing/       # หลักฐานการคัดเลือกแบบจำลอง
@@ -130,8 +160,12 @@ Demo_SLA/
 └── train_model_final/                 # ตารางฟีเจอร์รายสถานี (สร้างอัตโนมัติ)
 ```
 
-โฟลเดอร์ `outputs_fair_comparison/` และ `train_model_final/` ถูกละไว้ใน `.gitignore`
-เพราะเป็นผลลัพธ์ที่สร้างใหม่ได้จากการรันโน้ตบุ๊ก
+โฟลเดอร์ `outputs_fair_comparison/`, `train_model_final/`, `frontend/dist/`,
+`frontend/public/cesium/` และ `backend/static/` ถูกละไว้ใน `.gitignore`
+เพราะสร้างใหม่ได้จากการรันโน้ตบุ๊กหรือ `npm run build`
+
+> **ห้าม commit ไฟล์ service account key** (`ee-*.json`, `service-account*.json`)
+> repository นี้เป็นสาธารณะ — `.gitignore` กันไว้ให้แล้ว
 
 ---
 
@@ -145,7 +179,10 @@ Demo_SLA/
 | statsmodels | 0.14 |
 | xarray + netCDF4 | 2026.7 / 1.7 |
 | GeoPandas | 1.1 |
+| Node.js / npm | 22 ขึ้นไป / 11 (เฉพาะส่วนเว็บ) |
+| FastAPI + Uvicorn | 0.141 / 0.52 (เฉพาะส่วนเว็บ) |
 
+- ส่วนเว็บแดชบอร์ดไม่จำเป็นต้องติดตั้ง หากต้องการรันเฉพาะโน้ตบุ๊ก
 - GPU ช่วยลดเวลาฝึก LSTM แต่ไม่ใช่ข้อบังคับ
 - หากไม่ติดตั้ง TensorFlow โน้ตบุ๊กจะข้ามส่วน LSTM แล้วรันต่อได้ตามปกติ
 
@@ -180,6 +217,18 @@ pip install geopandas shapely folium pyproj contextily openpyxl jupyter ipykerne
 > `contextily` ใช้ดึง basemap เท่านั้น หากใช้งานไม่ได้ โน้ตบุ๊กยังสร้างแผนที่ด้วย
 > Folium หรือวิธีสำรองที่ไม่พึ่ง `contextily` ได้
 
+### ส่วนเว็บแดชบอร์ด (ไม่บังคับ)
+
+```powershell
+# frontend
+cd frontend
+npm install
+
+# backend — ใช้ virtual environment แยกจากโน้ตบุ๊กได้
+cd ../backend
+pip install -r requirements.txt
+```
+
 ---
 
 ## วิธีใช้งาน
@@ -194,6 +243,27 @@ pip install geopandas shapely folium pyproj contextily openpyxl jupyter ipykerne
 ```powershell
 jupyter notebook "SLA_predict_SARIMA_RF_LSTM.ipynb"
 ```
+
+### รันเว็บแดชบอร์ด
+
+```powershell
+# โหมดพัฒนา — hot reload ที่ http://localhost:5173
+cd frontend
+npm run dev
+
+# build ใช้งานจริง (postbuild คัดลอก dist/ ไป backend/static/ ให้อัตโนมัติ)
+npm run build
+
+# เสิร์ฟทั้ง API และหน้าเว็บด้วย FastAPI ที่ http://localhost:8000
+cd ../backend
+uvicorn app.main:app --reload --port 8000
+```
+
+| คำสั่ง | ผลลัพธ์ |
+|---|---|
+| `npm run dev` | Vite dev server (เรียก `copy:cesium` ให้ก่อนอัตโนมัติ) |
+| `npm run build` | `tsc` ตรวจ type แล้ว build ทั้ง 4 หน้าลง `dist/` |
+| `npm run preview` | เปิด `dist/` ด้วย static server เพื่อตรวจก่อน deploy |
 
 ---
 
@@ -383,6 +453,65 @@ lstm_test_predictions.csv
 
 ---
 
+## เว็บแดชบอร์ด
+
+หน้าเว็บเป็น **multi-page build** ของ Vite — หน้ารวมหนึ่งหน้า และหน้าเดโมแผนที่
+สามไลบรารีที่ใช้ข้อมูลสถานีชุดเดียวกันจาก `src/stations.ts`
+เพื่อเปรียบเทียบความเหมาะสมของแต่ละ Web Map API กับงาน SLA
+
+| หน้า | ไลบรารี | จุดเด่น |
+|---|---|---|
+| `index.html` | — | หน้ารวมลิงก์และคำอธิบายแต่ละเดโม |
+| `leaflet.html` | Leaflet 1.9.4 | แผนที่ 2 มิติ raster tile เบาที่สุด เหมาะกับหมุดและ popup |
+| `maplibre.html` | MapLibre GL JS 6.7.0 | WebGL + vector tile หมุน/เอียงมุมกล้องได้ มี dropdown เลือกจังหวัด |
+| `cesium.html` | CesiumJS 1.145.0 | ลูกโลก 3 มิติ รองรับ terrain และแกนเวลา |
+
+**Backend** (`backend/app/main.py`) เป็นโครง FastAPI สำหรับต่อยอด API พยากรณ์
+ปัจจุบันมี `GET /health` (health check), `GET /api` (ข้อมูลบริการ), `/docs`
+(เอกสาร OpenAPI) และ mount `backend/static/` ไว้ที่ `/` เพื่อเสิร์ฟหน้าเว็บ
+
+**Base path** — `frontend/vite.config.ts` อ่านค่า `VITE_BASE` จาก environment
+ค่าเริ่มต้นคือ `/` (สำหรับ FastAPI) ส่วน workflow ตั้งเป็น `/Demo_SLA/` ตอน deploy
+ขึ้น GitHub Pages โค้ดจึงอ้างลิงก์ผ่าน `import.meta.env.BASE_URL` และ `%BASE_URL%`
+แทนการ hard-code เส้นทาง
+
+> Cesium ต้องโหลด `Workers/`, `Assets/`, `Widgets/` แบบ static
+> สคริปต์ `copy:cesium` จึงคัดลอกจาก `node_modules` มาไว้ที่ `public/cesium/`
+> ก่อน `dev` และ `build` ทุกครั้ง
+
+---
+
+## การนำขึ้นระบบ
+
+### GitHub Pages (เฉพาะ frontend)
+
+ทุกครั้งที่ push แตะ `frontend/` บน `main` workflow
+[`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+จะ build ด้วย `VITE_BASE=/Demo_SLA/` แล้ว deploy ให้อัตโนมัติ
+
+```text
+https://jariya-aum.github.io/Demo_SLA/
+```
+
+สั่งรันเองได้จากแท็บ **Actions -> Deploy frontend to GitHub Pages -> Run workflow**
+
+> หน้าเว็บบน Pages เป็น static ล้วน จึงไม่มี API ของ backend
+> หากต้องการใช้งาน API ต้อง deploy `backend/` แยกต่างหาก
+
+### Backend
+
+`backend/Procfile` และ `backend/.gcloudignore` เตรียมไว้สำหรับ deploy
+แบบ container/buildpack เช่น Cloud Run
+
+```text
+web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+ตั้ง environment variable `ALLOWED_ORIGINS` เป็นรายการ origin ที่อนุญาต
+คั่นด้วยจุลภาค — ค่าเริ่มต้นครอบคลุมเฉพาะ dev server ในเครื่อง
+
+---
+
 ## ข้อควรทราบและข้อจำกัด
 
 - SLA เป็น anomaly และมีค่าติดลบได้ จึงไม่ใช้ log transformation
@@ -392,6 +521,9 @@ lstm_test_predictions.csv
   TensorFlow และไลบรารีที่ติดตั้งในเครื่อง
 - ผลลัพธ์ใช้ได้กับพื้นที่และช่วงเวลาที่ศึกษาเท่านั้น การนำไปใช้กับพื้นที่อื่น
   ต้องปรับ hyperparameter ใหม่
+- เว็บแดชบอร์ดยังแสดงเฉพาะตำแหน่งสถานี ยังไม่ได้เชื่อมผลพยากรณ์จากโน้ตบุ๊ก
+- bundle ของ CesiumJS ใหญ่ประมาณ 4 MB (gzip ~1.1 MB) หน้า `cesium.html`
+  จึงโหลดช้ากว่าอีกสองหน้าอย่างเห็นได้ชัด
 
 ---
 

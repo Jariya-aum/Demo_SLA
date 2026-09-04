@@ -1,30 +1,118 @@
 :root {
+  --bg: #ffffff;
+  --fg: #16202b;
+  --muted: #5b6b7c;
+  --border: #dde3ea;
+  --accent: #0d3b66;
+  --card: #f7f9fb;
   font-family: system-ui, "Segoe UI", "Noto Sans Thai", sans-serif;
-  line-height: 1.5;
-  color-scheme: light dark;
+  line-height: 1.55;
 }
 
-* {
-  box-sizing: border-box;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1620;
+    --fg: #e6edf3;
+    --muted: #93a4b5;
+    --border: #26313d;
+    --accent: #7cb3e8;
+    --card: #16202b;
+  }
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
 }
+
+/* ---------- หน้ารวม (index.html) ---------- */
 
 #app {
-  max-width: 1280px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 3rem 1.5rem;
 }
 
-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.75rem;
-}
+header h1 { margin: 0 0 0.35rem; font-size: 1.9rem; letter-spacing: -0.01em; }
+header p  { margin: 0 0 2.5rem; color: var(--muted); }
 
-header p {
+.demos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  list-style: none;
   margin: 0;
-  opacity: 0.7;
+  padding: 0;
+}
+
+.demos a {
+  display: block;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.demos a:hover { border-color: var(--accent); transform: translateY(-2px); }
+.demos h2 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+.demos .ver { font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.demos p { margin: 0.5rem 0 0; font-size: 0.88rem; color: var(--muted); }
+
+/* ---------- หน้าตัวอย่างแผนที่ ---------- */
+
+body.demo { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+.topbar {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.topbar a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+.topbar a:hover { text-decoration: underline; }
+.topbar strong { font-size: 0.95rem; }
+.topbar span { color: var(--muted); font-size: 0.8rem; }
+
+#map { flex: 1; min-height: 0; }
+
+/* Cesium ใส่ credit container ทับ layout — ดันให้อยู่ในกรอบแผนที่ */
+.cesium-viewer { height: 100%; }
+
+/* dropdown เลือกจังหวัดบนแถบด้านบน */
+.topbar .picker {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.topbar select {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  max-width: 15rem;
+}
+
+.topbar select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }

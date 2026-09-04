@@ -1,0 +1,58 @@
+# .gcloudignore — ควบคุมว่าไฟล์ไหนถูกอัปโหลดไป Cloud Build
+#
+# สำคัญ: ถ้าไม่มีไฟล์นี้ gcloud จะไปใช้ .gitignore แทน
+# ซึ่งจะทำให้ static/ (web root ที่ build มาจาก frontend) ไม่ถูกอัปโหลด
+# และเว็บจะขึ้น 404 ทั้งหมด — จึงต้องมีไฟล์นี้เสมอ
+
+.gcloudignore
+.git/
+.gitignore
+
+# Virtual environment — ต้องไม่อัปโหลด (34 MB) Cloud Build ติดตั้งจาก requirements.txt เอง
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+# Secrets — ห้ามหลุดขึ้น cloud เด็ดขาด
+.env
+.env.local
+*.key
+*.pem
+service-account*.json
+gcp-credentials*.json
+application_default_credentials.json
+
+# Notebooks / artifacts
+.ipynb_checkpoints/
+*.ipynb
+models/
+checkpoints/
+*.h5
+*.keras
+*.tflite
+*.pkl
+*.joblib
+
+# Logs / OS
+logs/
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# หมายเหตุ: static/ ตั้งใจ "ไม่" ใส่ไว้ที่นี่ เพราะเป็น web root ที่ต้อง deploy ไปด้วย

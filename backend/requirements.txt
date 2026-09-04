@@ -1,0 +1,3 @@
+# API runtime — ตรึงเวอร์ชันตามที่ทดสอบแล้ว
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
