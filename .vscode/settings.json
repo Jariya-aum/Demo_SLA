@@ -1,0 +1,91 @@
+{
+  // =============================================================
+  //  Python interpreter — ใช้ .venv ของโปรเจกต์เสมอ
+  //  (ต้องเป็นตัวนี้ ไม่ใช่ Python หลักของเครื่อง เพราะมี
+  //   tensorflow / statsmodels / geopandas ติดตั้งไว้ที่นี่)
+  // =============================================================
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+
+  // =============================================================
+  //  Jupyter / Notebook
+  // =============================================================
+  // สำคัญ: บังคับให้ kernel ทำงานที่โฟลเดอร์โปรเจกต์
+  // โน้ตบุ๊กหา BASE_DIR จาก cwd โดยมองหา Rawdata/sla_monthly_1993_2024.nc
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+
+  // log ของ SARIMA grid search ยาวมาก — ให้ output เลื่อนในกล่องตัวเอง
+  "notebook.output.scrolling": true,
+  "notebook.output.textLineLimit": 200,
+  "notebook.lineNumbers": "on",
+
+  // ปิด format-on-save ของโน้ตบุ๊ก กันโค้ดทั้งไฟล์ถูกจัดรูปแบบใหม่โดยไม่ตั้งใจ
+  "notebook.formatOnSave.enabled": false,
+  "notebook.diff.ignoreMetadata": true,
+
+  "jupyter.askForKernelRestart": false,
+  "jupyter.interactiveWindow.textEditor.executeSelection": true,
+
+  // =============================================================
+  //  Editor
+  // =============================================================
+  "editor.rulers": [100],
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.suggestSelection": "first",
+
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.encoding": "utf8",
+
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+  // .ipynb คือไฟล์ JSON — ห้าม editor แตะ byte ใด ๆ ตอนเซฟ
+  // (กัน output ที่ตรวจสอบแล้วเพี้ยน ถ้าเผลอเปิดโน้ตบุ๊กด้วย Text Editor)
+  "[json]": {
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": false,
+    "files.insertFinalNewline": false
+  },
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  },
+
+  // ยังไม่ได้ติดตั้ง formatter (black / ruff) ใน .venv จึงไม่เปิด format-on-save
+  // ถ้าติดตั้งภายหลัง:  pip install black
+  // แล้วเปิดสองบรรทัดนี้:
+  //   "editor.formatOnSave": true,
+  //   "[python]": { "editor.defaultFormatter": "ms-python.black-formatter" },
+  "editor.formatOnSave": false,
+
+  // =============================================================
+  //  ซ่อน/ข้ามสิ่งที่ไม่ต้องเปิดและไม่ต้องค้นหา
+  //  (ช่วยให้ค้นหาเร็วขึ้นมาก เพราะ .venv มีไฟล์หลายแสนไฟล์)
+  // =============================================================
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.ipynb_checkpoints": true,
+    "**/desktop.ini": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/outputs": true,
+    "**/outputs_fair_comparison": true,
+    "**/train_model_final": true,
+    "**/*.bak*": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/outputs/**": true,
+    "**/outputs_fair_comparison/**": true
+  },
+
+  // =============================================================
+  //  Terminal
+  // =============================================================
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.cwd": "${workspaceFolder}"
+}
