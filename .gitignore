@@ -108,3 +108,7 @@ ehthumbs.db
 # Claude Code — settings.json แชร์ได้ ส่วน settings.local.json เป็นของเฉพาะเครื่อง
 # ---------------------------------------------------------------
 .claude/settings.local.json
+
+# Node (frontend tooling)
+node_modules/
+npm-debug.log*

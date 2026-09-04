@@ -1,0 +1,61 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test / type / lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Notebooks
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# Environment / secrets
+.env
+.env.local
+*.key
+*.pem
+service-account*.json
+gcp-credentials*.json
+application_default_credentials.json
+.cdsapirc
+
+# Model artifacts / data outputs
+models/
+checkpoints/
+outputs/
+saved_model/
+*.h5
+*.keras
+*.tflite
+*.pb
+*.pkl
+*.joblib
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
