@@ -1,4 +1,4 @@
-# SLA Prediction — SARIMA · Random Forest · LSTM
+# SLA Prediction  SARIMA · Random Forest · LSTM
 
 พยากรณ์ค่าความผิดปกติของระดับน้ำทะเลรายเดือน (Sea Level Anomaly: SLA) ล่วงหน้า 1 เดือน
 บริเวณอ่าวไทยตอนบน โดยเปรียบเทียบแบบจำลอง 3 ชนิดบนข้อมูล ชุดแบ่งข้อมูล เป้าหมาย
