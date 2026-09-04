@@ -487,13 +487,17 @@ lstm_test_predictions.csv
 
 ทุกครั้งที่ push แตะ `frontend/` บน `main` workflow
 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-จะ build ด้วย `VITE_BASE=/Demo_SLA/` แล้ว deploy ให้อัตโนมัติ
+จะ build ด้วย `VITE_BASE=/Demo_SLA/` แล้ว force push ผลลัพธ์ลงแบรนช์ `gh-pages`
 
 ```text
 https://jariya-aum.github.io/Demo_SLA/
 ```
 
+ตั้งค่าใน **Settings -> Pages** เป็น *Deploy from a branch* -> `gh-pages` / `(root)`
 สั่งรันเองได้จากแท็บ **Actions -> Deploy frontend to GitHub Pages -> Run workflow**
+
+> แบรนช์ `gh-pages` เก็บเฉพาะผลลัพธ์ build และถูกเขียนทับทุกครั้ง — ห้ามแก้ด้วยมือ
+> ประวัติของโค้ดจริงอยู่ที่ `main` เท่านั้น
 
 > หน้าเว็บบน Pages เป็น static ล้วน จึงไม่มี API ของ backend
 > หากต้องการใช้งาน API ต้อง deploy `backend/` แยกต่างหาก

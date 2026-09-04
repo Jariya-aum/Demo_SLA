@@ -1,5 +1,6 @@
-# Build frontend/ ด้วย Vite แล้ว deploy ขึ้น GitHub Pages
-# URL ที่ได้: https://jariya-aum.github.io/Demo_SLA/
+# Build frontend/ ด้วย Vite แล้ว publish ลงแบรนช์ gh-pages
+# GitHub Pages ตั้งค่าเป็น "Deploy from a branch: gh-pages / (root)"
+# URL: https://jariya-aum.github.io/Demo_SLA/
 name: Deploy frontend to GitHub Pages
 
 on:
@@ -11,9 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # ปล่อยให้ deploy ที่กำลังทำงานอยู่จบก่อน ไม่ยกเลิกกลางคัน
 concurrency:
@@ -21,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,29 +34,25 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # enablement: true เปิด GitHub Pages ให้อัตโนมัติถ้ายังไม่เคยเปิด
-      - id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - run: npm ci
 
       # Pages เสิร์ฟ project site ใต้ /Demo_SLA/ จึงต้องตั้ง base ให้ตรง
       - run: npm run build
         env:
-          VITE_BASE: ${{ steps.pages.outputs.base_path }}/
+          VITE_BASE: /${{ github.event.repository.name }}/
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      # gh-pages เก็บเฉพาะผลลัพธ์ build จึง force push ทับทุกครั้ง
+      # ไม่ต้องเก็บประวัติ ประวัติจริงอยู่ที่ main
+      - name: Publish dist/ to gh-pages
+        working-directory: frontend/dist
+        run: |
+          git init -b gh-pages
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m "Deploy ${GITHUB_SHA} to GitHub Pages"
+          git push --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
