@@ -502,13 +502,93 @@ const SLACharts = (() => {
 
   /** วาดกราฟทุกใบใหม่เมื่อธีมเปลี่ยน (สีอ่านจาก CSS จึงต้อง re-render) */
   function resizeAll() {
-    document.querySelectorAll('.plot').forEach((el) => {
+    document.querySelectorAll('.plot, .stat__spark').forEach((el) => {
       if (el.data) Plotly.Plots.resize(el);
+    });
+  }
+
+  // ====================================================================== //
+  // การ์ดตัวเลขหลัก (KPI)                                                  //
+  // ====================================================================== //
+
+  /**
+   * เส้นกราฟจิ๋วในการ์ดตัวเลข — บอกรูปร่างของอนุกรม ไม่ใช่ให้อ่านค่า
+   * จึงไม่มีแกน ไม่มีกริด และปิด hover ทั้งหมด
+   * @param {HTMLElement} el
+   * @param {number[]} values ค่าตามลำดับเวลา
+   * @param {string} color สี #rrggbb
+   */
+  function sparkline(el, values, color) {
+    if (!el || !Array.isArray(values) || values.length < 2) return;
+
+    draw(el, [{
+      type: 'scatter', mode: 'lines',
+      x: values.map((_, i) => i),
+      y: values,
+      line: { color, width: 1.8, shape: 'spline', smoothing: 0.5 },
+      fill: 'tozeroy',
+      fillcolor: withAlpha(color, 0.14),
+      hoverinfo: 'skip',
+    }], {
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      margin: { l: 0, r: 0, t: 2, b: 0 },
+      showlegend: false,
+      dragmode: false,
+      xaxis: { visible: false, fixedrange: true },
+      // ให้เส้นเต็มความสูงของการ์ด แต่เว้นขอบบนเล็กน้อยกันเส้นชนขอบ
+      yaxis: {
+        visible: false, fixedrange: true,
+        range: (() => {
+          const lo = Math.min(...values);
+          const hi = Math.max(...values);
+          const pad = (hi - lo || 1) * 0.12;
+          return [lo - pad, hi + pad];
+        })(),
+      },
+    });
+  }
+
+  /**
+   * โดนัทสัดส่วนความสำคัญของตัวแปรตามกลุ่ม (ผลรวม MDI ของแต่ละสถานี = 1)
+   * @param {HTMLElement} el
+   * @param {{group: string, share: number}[]} groups
+   * @param {string[]} colors สีของแต่ละกลุ่มตามลำดับเดียวกัน
+   */
+  function groupDonut(el, groups, colors) {
+    if (!el || !groups.length) return;
+    const p = palette();
+
+    draw(el, [{
+      type: 'pie', hole: 0.62,
+      labels: groups.map((g) => g.group),
+      values: groups.map((g) => g.share),
+      marker: { colors, line: { color: p.surface, width: 2.5 } },
+      textinfo: 'none',
+      sort: false,
+      direction: 'clockwise',
+      hovertemplate: '%{label}<br>%{percent}<extra></extra>',
+    }], {
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      margin: { l: 8, r: 8, t: 8, b: 8 },
+      showlegend: false,
+      font: { family: FONT, size: 12, color: p.ink2 },
+      hoverlabel: {
+        bgcolor: p.surface, bordercolor: p.border,
+        font: { family: FONT, size: 12, color: p.ink },
+      },
+      annotations: [{
+        text: `<b>${groups.length}</b><br><span style="font-size:10.5px">กลุ่มตัวแปร</span>`,
+        showarrow: false, x: 0.5, y: 0.5,
+        font: { family: FONT, size: 20, color: p.ink },
+      }],
     });
   }
 
   return {
     palette, bestRmseBar, trendBar, slaSeries, climatology, metPanel,
     obsPred, scatter, residual, forecastChart, featureImportance, resizeAll,
+    sparkline, groupDonut,
   };
 })();

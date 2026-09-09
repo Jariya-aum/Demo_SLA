@@ -9,6 +9,14 @@
   'use strict';
 
   const ROUTES = ['overview', 'sla', 'meteorology', 'models', 'report'];
+  const ROUTE_TITLE = {
+    overview: 'ภาพรวมพื้นที่ศึกษา',
+    sla: 'การวิเคราะห์ SLA',
+    meteorology: 'ตัวแปรอุตุนิยมวิทยา',
+    models: 'ผลการพยากรณ์',
+    report: 'รายงานอัตโนมัติ',
+  };
+  const SIDEBAR_KEY = 'sla-webmap-sidebar';
   const THEME_KEY = 'sla-webmap-theme';
 
   const ui = {
@@ -153,12 +161,181 @@
     });
   }
 
+  /** อ่านสีเน้นจาก CSS — การ์ดตัวเลขใช้สีต่างกันเพื่อให้จำแยกได้ */
+  function themeColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /**
+   * การ์ดตัวเลขหลักของสถานีที่เลือก
+   * ทุกค่าอ่านจากไฟล์ผลการศึกษา ไม่มีการคำนวณค่าทางวิทยาศาสตร์ใหม่
+   * sparkline ใช้อนุกรม SLA จริงของสถานีนั้น
+   */
+  function renderStatCards() {
+    const s = SLAData.station(ui.station);
+    const info = SLAData.metaStation(ui.station);
+    const best = SLAData.bestModel(ui.station);
+    const series = SLAData.state.slaByStation[ui.station].map((r) => r.value);
+    const last24 = series.slice(-24);
+
+    const ICONS = {
+      wave: '<path d="M2 12c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 5 4"/><path d="M2 18c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/>',
+      trend: '<path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/>',
+      target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+      calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+    };
+    const ico = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+
+    const cards = [
+      {
+        key: 'last',
+        cvar: '--c-blue',
+        label: 'SLA ล่าสุดในชุดข้อมูล',
+        value: num(info.last_m, 4, { sign: true }),
+        unit: 'm',
+        icon: 'wave',
+        pill: `เดือน ${esc(info.last_date)}`,
+        meta: 'ค่าเดือนสุดท้ายที่มีข้อมูล ไม่ใช่ค่าปัจจุบัน',
+        spark: last24,
+      },
+      {
+        key: 'trend',
+        cvar: '--c-emerald',
+        label: 'แนวโน้มเชิงเส้น',
+        value: num(info.trend_mm_per_year, 2, { sign: true }),
+        unit: 'mm/ปี',
+        icon: 'trend',
+        pill: `${esc(info.start)} – ${esc(info.end)}`,
+        meta: 'สถิติเชิงพรรณนาของอนุกรม ไม่ใช่ผลของแบบจำลอง',
+        spark: series,
+      },
+      {
+        key: 'best',
+        cvar: '--c-violet',
+        label: 'แบบจำลองที่ดีที่สุด',
+        value: SLAData.MODEL_STYLE[best.model].label,
+        unit: '',
+        icon: 'target',
+        pill: `RMSE ${num(best.rmse, 4)} m`,
+        meta: `R² ${num(best.r2, 4)} · MAE ${num(best.mae, 4)} m บนชุด Test`,
+        spark: (SLAData.state.predByStation[ui.station][best.model] || [])
+          .map((r) => r.predicted),
+        textValue: true,
+      },
+      {
+        key: 'span',
+        cvar: '--c-amber',
+        label: 'ช่วงข้อมูลที่ใช้',
+        value: String(info.n_months),
+        unit: 'เดือน',
+        icon: 'calendar',
+        pill: `±${SLAData.state.meta.experiment.buffer_deg}° box mean`,
+        meta: `SD ${num(info.sd_m, 4)} m · เฉลี่ย ${num(info.mean_m, 4, { sign: true })} m`,
+        spark: (SLAData.state.climatology[ui.station] || [])
+          .slice().sort((a, b) => a.month - b.month).map((r) => r.mean_m),
+      },
+    ];
+
+    $('#statCards').innerHTML = cards.map((c) => `
+      <article class="stat" style="--c: var(${c.cvar})" data-spark="${c.key}">
+        <div class="stat__top">
+          <div>
+            <div class="stat__label">${esc(c.label)}</div>
+            <div class="stat__value${c.textValue ? ' stat__value--text' : ''}">
+              ${c.textValue ? esc(c.value) : esc(c.value)}
+              ${c.unit ? `<span class="stat__unit">${esc(c.unit)}</span>` : ''}
+            </div>
+          </div>
+          <div class="stat__ico" aria-hidden="true">${ico(c.icon)}</div>
+        </div>
+        <div class="stat__meta">
+          <span class="stat__pill">${c.pill}</span>
+          <span>${esc(c.meta)}</span>
+        </div>
+        ${c.spark ? `<div class="stat__spark plot" id="spark-${c.key}"></div>` : ''}
+      </article>`).join('');
+
+    for (const c of cards) {
+      if (!c.spark) continue;
+      SLACharts.sparkline($(`#spark-${c.key}`), c.spark, themeColor(c.cvar));
+    }
+  }
+
+  /** โดนัทสัดส่วนความสำคัญของตัวแปรตามกลุ่ม — ใช้ตัวเลขชุดเดียวกับหน้ารายงาน */
+  function renderGroupShare() {
+    const groups = SLAReport.compute().featureGroups;
+    const legend = $('#groupLegend');
+    const plot = $('#plotGroupDonut');
+
+    if (!groups.length) {
+      plot.innerHTML = '';
+      legend.innerHTML = '<p class="legend-note">N/A — ไม่มีข้อมูล feature importance ในชุดข้อมูล</p>';
+      return;
+    }
+
+    // กลุ่มตัวแปรเป็นหมวดของ "ที่มาของข้อมูล" จึงใช้สีของหน้าเว็บ ไม่ใช่สีประจำแบบจำลอง
+    const cvars = ['--c-blue', '--c-emerald', '--c-amber', '--c-violet', '--c-rose'];
+    const colors = groups.map((_, i) => themeColor(cvars[i % cvars.length]));
+
+    SLACharts.groupDonut(plot, groups, colors);
+
+    legend.innerHTML = groups.map((g, i) => `
+      <div class="legend-list__row">
+        <span class="legend-list__dot" style="background:${colors[i]}"></span>
+        <span class="legend-list__name">${esc(g.group)}
+          <span>${g.nFeatures} ตัวแปร</span></span>
+        <span class="legend-list__val">${(g.share * 100).toFixed(1)}%</span>
+      </div>`).join('');
+  }
+
+  /**
+   * แถบ R² ของแต่ละแบบจำลอง
+   * R² เป็นสัดส่วน 0–1 อยู่แล้ว จึงแสดงเป็นแถบได้ตรง ๆ โดยไม่ต้องตั้งเป้าใด ๆ
+   * ค่าติดลบเป็นไปได้ในทางทฤษฎี จึงตัดความกว้างไม่ให้ต่ำกว่า 0
+   */
+  function renderR2Meters() {
+    const rows = SLAData.MODELS.map((m) => SLAData.state.metricsIndex[ui.station][m]);
+    const best = SLAData.bestModel(ui.station);
+
+    $$('[data-bind="r2StationLabel"]').forEach((el) => {
+      el.textContent = `· ${SLAData.station(ui.station).station}`;
+    });
+
+    $('#r2Meters').innerHTML = rows.map((r) => {
+      const style = SLAData.MODEL_STYLE[r.model];
+      const pct = Number.isFinite(r.r2) ? Math.max(0, Math.min(1, r.r2)) * 100 : 0;
+      const isBest = r.model === best.model;
+      return `
+        <div class="meter" style="--c: var(${style.cssVar})">
+          <div class="meter__top">
+            <span class="meter__name">${modelTag(r.model)}${isBest ? ' <span class="badge">ดีที่สุด</span>' : ''}</span>
+            <span class="meter__val">${num(r.r2, 4)}</span>
+          </div>
+          <div class="meter__track">
+            <div class="meter__fill" style="width:${pct.toFixed(1)}%"></div>
+          </div>
+          <div class="meter__foot">
+            <span>RMSE ${num(r.rmse, 4)} m</span>
+            <span>MAE ${num(r.mae, 4)} m</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    $('#r2Note').textContent =
+      'R² = 1 คือทำนายตรงทุกจุด · ค่าทั้งหมดอ่านจาก model_metrics.csv '
+      + `บนชุด Test ${SLAData.splits()[2].start} ถึง ${SLAData.splits()[2].end}`;
+  }
+
   function renderOverview() {
+    renderStatCards();
     renderStationList();
     renderStationDetail();
     renderOverviewTable();
     SLACharts.bestRmseBar($('#plotBestRmse'));
     SLACharts.trendBar($('#plotTrend'));
+    renderGroupShare();
+    renderR2Meters();
     if (ui.mapReady) {
       SLAMap.invalidate();
       SLAMap.setSelected(ui.station);
@@ -432,6 +609,9 @@
       if (el.dataset.route === ui.route) el.setAttribute('aria-current', 'page');
       else el.removeAttribute('aria-current');
     });
+    const crumb = $('#crumbPage');
+    if (crumb) crumb.textContent = ROUTE_TITLE[ui.route] || '';
+
     renderCurrentPage();
     SLACharts.resizeAll();
     if (ui.route === 'overview' && ui.mapReady) SLAMap.invalidate();
@@ -464,6 +644,43 @@
       const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       applyTheme(next);
     });
+  }
+
+  // ------------------------------------------------------------- แถบข้าง
+
+  /** ย่อ/ขยายแถบเมนู และจำค่าที่เลือกไว้ในเครื่องผู้ใช้ */
+  function initSidebar() {
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(SIDEBAR_KEY) === '1'; } catch (err) { /* โหมดส่วนตัว */ }
+
+    const apply = () => {
+      document.body.classList.toggle('is-collapsed', collapsed);
+      const btn = $('#sideToggle');
+      btn.textContent = collapsed ? '›' : '‹';
+      btn.setAttribute('aria-expanded', String(!collapsed));
+    };
+    apply();
+
+    $('#sideToggle').addEventListener('click', () => {
+      collapsed = !collapsed;
+      try { localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0'); } catch (err) { /* โหมดส่วนตัว */ }
+      apply();
+      // แผนที่และกราฟต้องวัดขนาดใหม่หลังพื้นที่เนื้อหาเปลี่ยนความกว้าง
+      setTimeout(() => {
+        SLACharts.resizeAll();
+        if (ui.mapReady) SLAMap.invalidate();
+      }, 210);
+    });
+  }
+
+  /** สรุปที่มาข้อมูลไว้ท้ายแถบเมนู ให้เห็นตลอดว่ากำลังดูข้อมูลชุดใด */
+  function fillSideFoot() {
+    const meta = SLAData.state.meta;
+    const st = SLAData.metaStation(SLAData.stationNames()[0]);
+    $('#sideFoot').innerHTML = `
+      <div><b>${SLAData.state.stations.length} สถานี</b> · ${esc(st.start)} – ${esc(st.end)}</div>
+      <div>${esc(meta.sources[0].name.replace(/\s*\(.*\)/, ''))} · ERA5</div>
+      <div>${meta.experiment.models.join(' · ')}</div>`;
   }
 
   // ----------------------------------------------------------------- boot
@@ -537,9 +754,22 @@
 
     ui.station = SLAData.stationNames()[0];
 
+    initSidebar();
     fillStationSelects();
     fillStaticText();
+    fillSideFoot();
     bindSlaControls();
+
+    // ปุ่มพิมพ์รายงานพาไปหน้ารายงานก่อน เพราะชุดรูปแบบสำหรับพิมพ์
+    // ออกแบบไว้ให้พิมพ์เฉพาะหน้านั้น
+    $('#printReport').addEventListener('click', () => {
+      if (ui.route !== 'report') {
+        window.location.hash = '#/report';
+        setTimeout(() => window.print(), 350);
+      } else {
+        window.print();
+      }
+    });
 
     $('#boot').remove();
     $('#app').hidden = false;
