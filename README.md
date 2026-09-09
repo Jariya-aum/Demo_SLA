@@ -33,6 +33,7 @@
 - [การประเมินผล](#การประเมินผล)
 - [ผลลัพธ์ที่ได้](#ผลลัพธ์ที่ได้)
 - [เว็บแดชบอร์ด](#เว็บแดชบอร์ด)
+- [Web Map App แสดงผลการศึกษา (`webapp/`)](#web-map-app-แสดงผลการศึกษา-webapp)
 - [การนำขึ้นระบบ](#การนำขึ้นระบบ)
 - [ข้อควรทราบและข้อจำกัด](#ข้อควรทราบและข้อจำกัด)
 - [เอกสารเพิ่มเติม](#เอกสารเพิ่มเติม)
@@ -45,12 +46,14 @@
 โครงการนี้พัฒนาและเปรียบเทียบแบบจำลองสำหรับพยากรณ์ SLA รายเดือนล่วงหน้า 1 เดือน (t+1)
 ใน 4 สถานีของอ่าวไทยตอนบน โดยใช้ข้อมูลดาวเทียม SLA ร่วมกับตัวแปรบรรยากาศจาก ERA5
 
-โปรเจกต์แบ่งเป็น 2 ส่วนที่ใช้งานแยกกันได้:
+โปรเจกต์แบ่งเป็นส่วนที่ใช้งานแยกกันได้:
 
 | ส่วน | ที่อยู่ | หน้าที่ |
 |---|---|---|
 | งานวิเคราะห์และสร้างแบบจำลอง | `SLA_predict_SARIMA_RF_LSTM.ipynb` | เตรียมข้อมูล ฝึกและเปรียบเทียบ 3 แบบจำลอง |
-| เว็บแดชบอร์ด | `frontend/` + `backend/` | แสดงตำแหน่งสถานีบนแผนที่ และโครง API สำหรับต่อยอด |
+| **Web Map App แสดงผลการศึกษา** | `webapp/` | แผนที่ + กราฟผล SLA / ERA5 / SARIMA / RF / LSTM (static, ขึ้น GitHub Pages) |
+| สคริปต์แปลงข้อมูลให้เว็บ | `scripts/build_web_data.py` | อ่านผลจากโน้ตบุ๊ก แล้วเขียนเป็น CSV/GeoJSON ใน `webapp/data/` |
+| เดโมแผนที่รุ่นก่อน | `frontend/` + `backend/` | เดโม Leaflet / MapLibre / Cesium และโครง API (ไม่ได้ deploy แล้ว) |
 
 **วัตถุประสงค์**
 
@@ -129,11 +132,22 @@ Demo_SLA/
 ├── .gitignore
 │
 ├── .github/workflows/
-│   └── deploy-pages.yml               # build frontend แล้ว deploy ขึ้น GitHub Pages
+│   └── deploy-pages.yml               # publish webapp/ ขึ้น GitHub Pages (ไม่มี build step)
 │
 ├── Rawdata/                           # ไฟล์ NetCDF ต้นทาง (ต้องเตรียมเอง)
 │   ├── sla_monthly_1993_2024.nc
 │   └── era5_monthly_1993_2024.nc
+│
+├── scripts/
+│   └── build_web_data.py              # แปลงผลการศึกษา -> webapp/data/
+│
+├── webapp/                            # Web Map App แสดงผลการศึกษา (static)
+│   ├── index.html                     # 5 เมนู: Overview / SLA / ERA5 / Model Results / Report
+│   ├── css/style.css
+│   ├── js/                            # data.js, charts.js, map.js, report.js, app.js
+│   ├── data/                          # CSV / GeoJSON / meta.json (สร้างจากสคริปต์)
+│   ├── assets/gee/                    # ภาพ remote sensing ที่ export จาก GEE
+│   └── README.md                      # รายละเอียดของเว็บ
 │
 ├── frontend/                          # เว็บแดชบอร์ด (Vite + TypeScript)
 │   ├── index.html                     # หน้ารวมลิงก์เดโม
@@ -481,20 +495,72 @@ lstm_test_predictions.csv
 
 ---
 
+## Web Map App แสดงผลการศึกษา (`webapp/`)
+
+ระบบแสดงผล ไม่ใช่ระบบ real-time — หน้าเว็บอ่านไฟล์ผลการศึกษาที่คำนวณไว้แล้วเท่านั้น
+ไม่ฝึกแบบจำลอง ไม่คำนวณค่าพยากรณ์ และไม่แก้ผลทางวิทยาศาสตร์ใด ๆ
+รายละเอียดเต็มอยู่ใน [`webapp/README.md`](webapp/README.md)
+
+**5 เมนูหลัก**
+
+| เมนู | แสดงอะไร |
+|---|---|
+| Overview | แผนที่ 4 สถานี + Study box ±0.25°, พิกัด, SLA ล่าสุด, แนวโน้ม, Best model |
+| SLA Analysis | อนุกรมเวลา SLA + เส้นแนวโน้ม, Mean/Min/Max/SD, ค่าเฉลี่ยรายเดือนตามปฏิทิน |
+| Meteorological Variables | อนุกรมเวลา SST / SLP / u10 / v10 จาก ERA5 |
+| Model Results & Forecast | ตารางเปรียบเทียบ 3 แบบจำลอง, Observed vs Predicted, scatter 1:1, residual, Historical→Prediction→Forecast, RF feature importance |
+| รายงานอัตโนมัติ · Report | เดชบอร์ดรายงาน — บทสรุปผู้บริหาร, ข้อค้นพบสำคัญ, ตารางที่ 1–6, รายงานรายสถานี, ภาคผนวกวิธีการ, ปุ่มพิมพ์เป็น PDF |
+
+หน้ารายงานเรียบเรียงบทสรุปและตารางใหม่จากไฟล์ใน `webapp/data/` ทุกครั้งที่เปิด
+ไม่มีตัวเลขหรือข้อสรุปใดเขียนค้างไว้ในหน้าเว็บ — รัน `scripts/build_web_data.py` ใหม่
+แล้วรายงานเปลี่ยนตามข้อมูลเองทั้งฉบับ ค่าที่เป็นการสรุปเชิงพรรณนา (อันดับ, ค่าเฉลี่ย
+ข้ามสถานี, ส่วนต่างร้อยละ) กำกับไว้ในตารางทุกจุด และค่าที่ไม่มีในไฟล์แสดงเป็น `N/A`
+
+**สร้าง/อัปเดตไฟล์ข้อมูลของเว็บ**
+
+```bash
+# ต้องรันโน้ตบุ๊กให้ได้ outputs_fair_comparison/ ก่อน
+python scripts/build_web_data.py
+
+# ถ้าผลการศึกษาอยู่คนละที่กับ repo ให้ระบุเอง
+python scripts/build_web_data.py --results "<path>/outputs_fair_comparison"
+```
+
+สคริปต์อ่าน `Rawdata/*.nc` และไฟล์ผลจากโน้ตบุ๊ก แล้วเขียน CSV / GeoJSON / `meta.json`
+ลง `webapp/data/` โดยคัดลอกค่า metric และค่าพยากรณ์มาตรง ๆ ไม่ปัดเศษและไม่คำนวณใหม่
+
+**เปิดดูในเครื่อง**
+
+```bash
+cd webapp
+python -m http.server 8000     # แล้วเปิด http://localhost:8000
+```
+
+> เปิดไฟล์ด้วย `file://` ไม่ได้ เพราะเบราว์เซอร์บล็อก `fetch()` ของไฟล์ใน `data/`
+
+**สิ่งที่ยังไม่มีในผลการศึกษา** — งานวิจัยพยากรณ์แบบ 1-step-ahead บนชุด Test
+(2020–2024) เท่านั้น ไม่มีค่าพยากรณ์ล่วงหน้าหลังปี 2024
+`webapp/data/forecast.csv` จึงมีแต่หัวตาราง และหน้าเว็บแสดง **N/A** ตามจริง
+
+---
+
 ## การนำขึ้นระบบ
 
-### GitHub Pages (เฉพาะ frontend)
+### GitHub Pages (Web Map App)
 
-ทุกครั้งที่ push แตะ `frontend/` บน `main` workflow
+ทุกครั้งที่ push แตะ `webapp/` บน `main` workflow
 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
-จะ build ด้วย `VITE_BASE=/Demo_SLA/` แล้ว force push ผลลัพธ์ลงแบรนช์ `gh-pages`
+จะคัดลอกโฟลเดอร์ `webapp/` ทั้งก้อน (ไม่ต้อง build) แล้ว force push ลงแบรนช์ `gh-pages`
 
 ```text
 https://jariya-aum.github.io/Demo_SLA/
 ```
 
 ตั้งค่าใน **Settings -> Pages** เป็น *Deploy from a branch* -> `gh-pages` / `(root)`
-สั่งรันเองได้จากแท็บ **Actions -> Deploy frontend to GitHub Pages -> Run workflow**
+สั่งรันเองได้จากแท็บ **Actions -> Deploy web map app to GitHub Pages -> Run workflow**
+
+`webapp/` ใช้ relative path ทั้งหมดและโหลดไลบรารีจาก CDN จึงทำงานได้ทั้งใต้ path ย่อย
+ของ Pages และเมื่อเปิดผ่านเว็บเซิร์ฟเวอร์ในเครื่อง
 
 > แบรนช์ `gh-pages` เก็บเฉพาะผลลัพธ์ build และถูกเขียนทับทุกครั้ง — ห้ามแก้ด้วยมือ
 > ประวัติของโค้ดจริงอยู่ที่ `main` เท่านั้น

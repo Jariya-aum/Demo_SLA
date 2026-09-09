@@ -1,0 +1,13 @@
+station,model,input_dimension,main_parameters
+Wat Khun Samut Chin,SARIMA,1D time series (univariate SLA),"order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)"
+Wat Khun Samut Chin,RF,2D: samples × 11 features,n_estimators=200; max_features=0.5; min_samples_leaf=2; random_state=42
+Wat Khun Samut Chin,LSTM,3D: samples × 12 timesteps × 7 features,single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=9
+Laem Chabang Port,SARIMA,1D time series (univariate SLA),"order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)"
+Laem Chabang Port,RF,2D: samples × 11 features,n_estimators=300; max_features=sqrt; min_samples_leaf=1; random_state=42
+Laem Chabang Port,LSTM,3D: samples × 12 timesteps × 7 features,single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=8
+Upper Gulf Offshore,SARIMA,1D time series (univariate SLA),"order=(1, 0, 0); seasonal_order=(0, 1, 1, 12)"
+Upper Gulf Offshore,RF,2D: samples × 11 features,n_estimators=100; max_features=0.5; min_samples_leaf=1; random_state=42
+Upper Gulf Offshore,LSTM,3D: samples × 12 timesteps × 7 features,single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=29
+Phetchaburi Bangkawe,SARIMA,1D time series (univariate SLA),"order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)"
+Phetchaburi Bangkawe,RF,2D: samples × 11 features,n_estimators=200; max_features=0.5; min_samples_leaf=1; random_state=42
+Phetchaburi Bangkawe,LSTM,3D: samples × 12 timesteps × 7 features,single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=8

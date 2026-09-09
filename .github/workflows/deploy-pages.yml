@@ -1,13 +1,17 @@
-# Build frontend/ ด้วย Vite แล้ว publish ลงแบรนช์ gh-pages
+# Publish webapp/ (Web Map App แสดงผลการศึกษา SLA) ลงแบรนช์ gh-pages
+#
+# webapp/ เป็น static site ล้วน ๆ — ไม่มี build step, ไม่มี dependency ที่ต้องติดตั้ง
+# จึงคัดลอกไฟล์ขึ้น gh-pages ได้ตรง ๆ
+#
 # GitHub Pages ตั้งค่าเป็น "Deploy from a branch: gh-pages / (root)"
 # URL: https://jariya-aum.github.io/Demo_SLA/
-name: Deploy frontend to GitHub Pages
+name: Deploy web map app to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
-      - 'frontend/**'
+      - 'webapp/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -22,29 +26,29 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+      # ทุก path ในเว็บเป็น relative ทั้งหมด จึงย้ายไปวางที่ root ของ gh-pages ได้เลย
+      # .nojekyll กัน Jekyll ทิ้งไฟล์/โฟลเดอร์ที่ขึ้นต้นด้วย _ (และทำให้ deploy เร็วขึ้น)
+      - name: ตรวจว่าไฟล์ข้อมูลครบก่อน deploy
+        run: |
+          set -e
+          for f in index.html .nojekyll \
+                   css/style.css \
+                   js/data.js js/charts.js js/map.js js/report.js js/app.js \
+                   data/meta.json data/stations.geojson \
+                   data/sla_historical.csv data/meteorology.csv \
+                   data/model_predictions.csv data/model_metrics.csv \
+                   data/model_settings.csv data/rf_feature_importance.csv \
+                   data/monthly_climatology.csv data/forecast.csv; do
+            test -f "webapp/$f" || { echo "ไม่พบ webapp/$f"; exit 1; }
+          done
 
-      - run: npm ci
-
-      # Pages เสิร์ฟ project site ใต้ /Demo_SLA/ จึงต้องตั้ง base ให้ตรง
-      - run: npm run build
-        env:
-          VITE_BASE: /${{ github.event.repository.name }}/
-
-      # gh-pages เก็บเฉพาะผลลัพธ์ build จึง force push ทับทุกครั้ง
-      # ไม่ต้องเก็บประวัติ ประวัติจริงอยู่ที่ main
-      - name: Publish dist/ to gh-pages
-        working-directory: frontend/dist
+      # gh-pages เก็บเฉพาะไฟล์ที่ deploy จึง force push ทับทุกครั้ง
+      # ประวัติจริงอยู่ที่ main
+      - name: Publish webapp/ to gh-pages
+        working-directory: webapp
         run: |
           git init -b gh-pages
           git config user.name  'github-actions[bot]'

@@ -1,0 +1,276 @@
+{
+  "type": "FeatureCollection",
+  "name": "sla_study_stations_upper_gulf_of_thailand",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3/CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.5312743,
+          13.5061216
+        ]
+      },
+      "properties": {
+        "kind": "station",
+        "station": "Wat Khun Samut Chin",
+        "station_th": "วัดขุนสมุทรจีน",
+        "lat": 13.5061216,
+        "lon": 100.5312743,
+        "buffer_deg": 0.25,
+        "sla_last_m": 0.273267,
+        "sla_last_date": "2024-12",
+        "sla_mean_m": 0.032228,
+        "sla_min_m": -0.248333,
+        "sla_max_m": 0.380233,
+        "sla_sd_m": 0.150429,
+        "trend_mm_per_year": 4.9375,
+        "record_start": "1993-01",
+        "record_end": "2024-12",
+        "best_model": "SARIMA",
+        "best_model_rmse_m": 0.04846
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              100.2812743,
+              13.2561216
+            ],
+            [
+              100.7812743,
+              13.2561216
+            ],
+            [
+              100.7812743,
+              13.7561216
+            ],
+            [
+              100.2812743,
+              13.7561216
+            ],
+            [
+              100.2812743,
+              13.2561216
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "kind": "study_box",
+        "station": "Wat Khun Samut Chin",
+        "station_th": "วัดขุนสมุทรจีน",
+        "buffer_deg": 0.25,
+        "area_deg2": 0.25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.868826,
+          13.047551
+        ]
+      },
+      "properties": {
+        "kind": "station",
+        "station": "Laem Chabang Port",
+        "station_th": "ท่าเรือแหลมฉบัง",
+        "lat": 13.047551,
+        "lon": 100.868826,
+        "buffer_deg": 0.25,
+        "sla_last_m": 0.301225,
+        "sla_last_date": "2024-12",
+        "sla_mean_m": 0.033306,
+        "sla_min_m": -0.231125,
+        "sla_max_m": 0.382175,
+        "sla_sd_m": 0.151585,
+        "trend_mm_per_year": 4.7244,
+        "record_start": "1993-01",
+        "record_end": "2024-12",
+        "best_model": "SARIMA",
+        "best_model_rmse_m": 0.04576
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              100.618826,
+              12.797551
+            ],
+            [
+              101.118826,
+              12.797551
+            ],
+            [
+              101.118826,
+              13.297551
+            ],
+            [
+              100.618826,
+              13.297551
+            ],
+            [
+              100.618826,
+              12.797551
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "kind": "study_box",
+        "station": "Laem Chabang Port",
+        "station_th": "ท่าเรือแหลมฉบัง",
+        "buffer_deg": 0.25,
+        "area_deg2": 0.25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.375,
+          12.625
+        ]
+      },
+      "properties": {
+        "kind": "station",
+        "station": "Upper Gulf Offshore",
+        "station_th": "พื้นที่ตอนล่างของอ่าวไทยตอนบน",
+        "lat": 12.625,
+        "lon": 100.375,
+        "buffer_deg": 0.25,
+        "sla_last_m": 0.315089,
+        "sla_last_date": "2024-12",
+        "sla_mean_m": 0.036178,
+        "sla_min_m": -0.235767,
+        "sla_max_m": 0.391744,
+        "sla_sd_m": 0.155728,
+        "trend_mm_per_year": 4.6967,
+        "record_start": "1993-01",
+        "record_end": "2024-12",
+        "best_model": "SARIMA",
+        "best_model_rmse_m": 0.047093
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              100.125,
+              12.375
+            ],
+            [
+              100.625,
+              12.375
+            ],
+            [
+              100.625,
+              12.875
+            ],
+            [
+              100.125,
+              12.875
+            ],
+            [
+              100.125,
+              12.375
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "kind": "study_box",
+        "station": "Upper Gulf Offshore",
+        "station_th": "พื้นที่ตอนล่างของอ่าวไทยตอนบน",
+        "buffer_deg": 0.25,
+        "area_deg2": 0.25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          100.065466,
+          13.099714
+        ]
+      },
+      "properties": {
+        "kind": "station",
+        "station": "Phetchaburi Bangkawe",
+        "station_th": "ชายฝั่งทะเลตำบลบางแก้ว",
+        "lat": 13.099714,
+        "lon": 100.065466,
+        "buffer_deg": 0.25,
+        "sla_last_m": 0.29935,
+        "sla_last_date": "2024-12",
+        "sla_mean_m": 0.037553,
+        "sla_min_m": -0.21095,
+        "sla_max_m": 0.370625,
+        "sla_sd_m": 0.141139,
+        "trend_mm_per_year": 4.7289,
+        "record_start": "1993-01",
+        "record_end": "2024-12",
+        "best_model": "SARIMA",
+        "best_model_rmse_m": 0.040286
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              99.815466,
+              12.849714
+            ],
+            [
+              100.315466,
+              12.849714
+            ],
+            [
+              100.315466,
+              13.349714
+            ],
+            [
+              99.815466,
+              13.349714
+            ],
+            [
+              99.815466,
+              12.849714
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "kind": "study_box",
+        "station": "Phetchaburi Bangkawe",
+        "station_th": "ชายฝั่งทะเลตำบลบางแก้ว",
+        "buffer_deg": 0.25,
+        "area_deg2": 0.25
+      }
+    }
+  ]
+}
