@@ -9,6 +9,19 @@
 * ตัวแปรอุตุนิยมวิทยาจาก ERA5 (SST, SLP, u10, v10)
 * แบบจำลอง SARIMA · Random Forest · LSTM (พยากรณ์ล่วงหน้า 1 เดือน)
 
+### ไฟล์ชุดนี้อยู่สองที่
+
+| ที่อยู่ | โครงสร้าง | ใช้ทำอะไร |
+|---|---|---|
+| [`Demo_SLA`](https://github.com/Jariya-aum/Demo_SLA) โฟลเดอร์ `webapp/` | เว็บอยู่ใต้ `webapp/` พร้อมโน้ตบุ๊ก, `Rawdata/` และ `scripts/` | ต้นทางของงานวิจัย — ที่สำหรับ**สร้างข้อมูลใหม่** |
+| [`Demo_SLA_Web_app`](https://github.com/Jariya-aum/Demo_SLA_Web_app) | ไฟล์เว็บอยู่ที่ **root** ของ repo | repo สำหรับ**เผยแพร่เว็บ** — Pages เสิร์ฟจาก `main / (root)` |
+
+repo เว็บเดี่ยวไม่มีโน้ตบุ๊ก ไฟล์ NetCDF และสคริปต์ build (ไฟล์ใหญ่และไม่จำเป็นต่อการเปิดเว็บ)
+ถ้าต้องสร้างไฟล์ใน `data/` ใหม่ ให้ทำใน repo `Demo_SLA` แล้วซิงก์มาด้วยคำสั่งท้ายเอกสารนี้
+
+> คำสั่งในเอกสารนี้เขียนแบบ repo งานวิจัย (`cd webapp`, `python scripts/build_web_data.py`)
+> ถ้าอ่านจาก repo เว็บเดี่ยว ให้ข้าม `cd webapp` เพราะอยู่ที่ root อยู่แล้ว
+
 ---
 
 ## 1. เปิดใช้งาน
@@ -181,3 +194,24 @@ importance ไว้ด้วย (`Perm_N_Repeats`, `N_Test`, `N_TrainVal`) ส�
 ชั้น "ภาพถ่ายดาวเทียม" ที่ให้มาเป็น Esri World Imagery (เปิดสาธารณะ ไม่ต้องใช้คีย์)
 ถ้าต้องการภาพ Sentinel-2 / Landsat จาก GEE จริง ๆ ให้ export ไว้ล่วงหน้า
 แล้ววางใน `assets/gee/` ตามวิธีใน `assets/gee/README.md`
+
+---
+
+## 7. ซิงก์ขึ้น repo เว็บเดี่ยว
+
+`Demo_SLA_Web_app` รับไฟล์จากโฟลเดอร์ `webapp/` ของ repo งานวิจัยผ่าน `git subtree`
+ซึ่งยก `webapp/` ขึ้นเป็น root ของ branch `main` ให้เอง
+
+```bash
+# ครั้งแรก — ผูก remote (ทำในโฟลเดอร์ repo Demo_SLA)
+git remote add webapp-repo https://github.com/Jariya-aum/Demo_SLA_Web_app.git
+
+# ทุกครั้งที่แก้ webapp/ แล้ว commit ลง main เรียบร้อย
+git subtree push --prefix=webapp webapp-repo main
+```
+
+ต้อง commit การแก้ไขลง `main` ของ repo งานวิจัยก่อน `subtree push` จึงจะเห็นการเปลี่ยนแปลง
+(subtree อ่านจาก commit ไม่ได้อ่านจากไฟล์ในเครื่อง)
+
+ตั้งค่า Pages ของ repo เว็บเดี่ยวที่ **Settings → Pages → Deploy from a branch →
+`main` / `(root)`** — ไม่ต้องใช้ GitHub Actions เพราะไฟล์อยู่ที่ root และเป็น static ล้วน
