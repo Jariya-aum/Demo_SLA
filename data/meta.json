@@ -1,0 +1,201 @@
+{
+  "title": "Sea Level Anomaly Monitoring & Forecasting — Upper Gulf of Thailand",
+  "title_th": "การติดตามและพยากรณ์ความผิดปกติของระดับน้ำทะเล กรณีศึกษา 4 สถานี บริเวณอ่าวไทยตอนบน",
+  "generated_from": {
+    "notebook": "SLA_predict_SARIMA_RF_LSTM.ipynb",
+    "results_dir": "outputs_fair_comparison",
+    "raw_data": [
+      "Rawdata/sla_monthly_1993_2024.nc",
+      "Rawdata/era5_monthly_1993_2024.nc"
+    ]
+  },
+  "sources": [
+    {
+      "id": "cmems",
+      "name": "Copernicus Marine Service (CMEMS)",
+      "role": "Sea Level Anomaly (SLA) รายเดือน 1993–2024",
+      "variables": [
+        "sla"
+      ],
+      "units": {
+        "sla": "m"
+      }
+    },
+    {
+      "id": "era5",
+      "name": "ERA5 reanalysis (Copernicus CDS)",
+      "role": "ตัวแปรอุตุนิยมวิทยาที่ป้อนให้ RF และ LSTM",
+      "variables": [
+        "sst",
+        "msl",
+        "u10",
+        "v10"
+      ],
+      "units": {
+        "sst": "°C",
+        "msl": "hPa",
+        "u10": "m/s",
+        "v10": "m/s"
+      }
+    },
+    {
+      "id": "gee",
+      "name": "Google Earth Engine (Sentinel-2 / Landsat)",
+      "role": "ภาพดาวเทียมประกอบพื้นที่ศึกษา (ไม่เข้าแบบจำลอง)",
+      "variables": [],
+      "units": {}
+    }
+  ],
+  "experiment": {
+    "buffer_deg": 0.25,
+    "spatial_averaging": "box mean ±0.25° รอบพิกัดสถานี",
+    "forecast_horizon_months": 1,
+    "lookback_months": 12,
+    "seasonal_period": 12,
+    "split": {
+      "train": {
+        "start": "1993-01-01",
+        "end": "2016-12-31"
+      },
+      "val": {
+        "start": "2017-01-01",
+        "end": "2019-12-31"
+      },
+      "test": {
+        "start": "2020-01-01",
+        "end": "2024-12-31"
+      }
+    },
+    "models": [
+      "SARIMA",
+      "RF",
+      "LSTM"
+    ],
+    "metric_primary": "RMSE (m)",
+    "rf_features": [
+      "SLA_hist",
+      "SST",
+      "SLP",
+      "u10",
+      "v10",
+      "SLA_lag1",
+      "SLA_lag3",
+      "SLA_lag6",
+      "SLA_lag12",
+      "month_sin",
+      "month_cos"
+    ],
+    "lstm_features": [
+      "SLA_hist",
+      "SST",
+      "SLP",
+      "u10",
+      "v10",
+      "month_sin",
+      "month_cos"
+    ],
+    "target": "SLA_target = SLA(t+1)",
+    "rf_importance": {
+      "mdi": "mean decrease in impurity — ผลรวมของแต่ละสถานีเท่ากับ 1",
+      "permutation_scope": "ชุด Test",
+      "permutation_n_repeats": 30,
+      "n_test": 60,
+      "n_trainval": 311
+    }
+  },
+  "stations": [
+    {
+      "station": "Wat Khun Samut Chin",
+      "station_th": "วัดขุนสมุทรจีน",
+      "lat": 13.5061216,
+      "lon": 100.5312743,
+      "best_model": "SARIMA",
+      "best_model_rmse_m": 0.0484597829901343,
+      "n_months": 384,
+      "start": "1993-01",
+      "end": "2024-12",
+      "mean_m": 0.03222760416666667,
+      "min_m": -0.24833333333333332,
+      "max_m": 0.38023333333333337,
+      "sd_m": 0.15042910138029708,
+      "min_date": "1993-08",
+      "max_date": "2013-01",
+      "last_m": 0.2732666666666667,
+      "last_date": "2024-12",
+      "trend_slope_m_per_month": 0.00041145636239304655,
+      "trend_intercept_m": -0.046566289231601755,
+      "trend_mm_per_year": 4.937476348716559
+    },
+    {
+      "station": "Laem Chabang Port",
+      "station_th": "ท่าเรือแหลมฉบัง",
+      "lat": 13.047551,
+      "lon": 100.868826,
+      "best_model": "SARIMA",
+      "best_model_rmse_m": 0.045760325783314,
+      "n_months": 384,
+      "start": "1993-01",
+      "end": "2024-12",
+      "mean_m": 0.033305794270833335,
+      "min_m": -0.23112500000000002,
+      "max_m": 0.38217500000000004,
+      "sd_m": 0.1515854512951074,
+      "min_date": "1999-07",
+      "max_date": "2013-01",
+      "last_m": 0.301225,
+      "last_date": "2024-12",
+      "trend_slope_m_per_month": 0.0003937017940854837,
+      "trend_intercept_m": -0.0420880992965368,
+      "trend_mm_per_year": 4.724421529025804
+    },
+    {
+      "station": "Upper Gulf Offshore",
+      "station_th": "พื้นที่ตอนล่างของอ่าวไทยตอนบน",
+      "lat": 12.625,
+      "lon": 100.375,
+      "best_model": "SARIMA",
+      "best_model_rmse_m": 0.0470933265818489,
+      "n_months": 384,
+      "start": "1993-01",
+      "end": "2024-12",
+      "mean_m": 0.03617835648148148,
+      "min_m": -0.23576666666666668,
+      "max_m": 0.39174444444444445,
+      "sd_m": 0.1557275712004417,
+      "min_date": "1993-08",
+      "max_date": "2022-12",
+      "last_m": 0.3150888888888889,
+      "last_date": "2024-12",
+      "trend_slope_m_per_month": 0.00039139018165617397,
+      "trend_intercept_m": -0.038772863305675836,
+      "trend_mm_per_year": 4.696682179874087
+    },
+    {
+      "station": "Phetchaburi Bangkawe",
+      "station_th": "ชายฝั่งทะเลตำบลบางแก้ว",
+      "lat": 13.099714,
+      "lon": 100.065466,
+      "best_model": "SARIMA",
+      "best_model_rmse_m": 0.040285545875773,
+      "n_months": 384,
+      "start": "1993-01",
+      "end": "2024-12",
+      "mean_m": 0.03755260416666667,
+      "min_m": -0.21095,
+      "max_m": 0.370625,
+      "sd_m": 0.14113933669481485,
+      "min_date": "1993-08",
+      "max_date": "2022-12",
+      "last_m": 0.29935,
+      "last_date": "2024-12",
+      "trend_slope_m_per_month": 0.00039407130565257206,
+      "trend_intercept_m": -0.03791205086580088,
+      "trend_mm_per_year": 4.728855667830865
+    }
+  ],
+  "notes": {
+    "forecast": "งานวิจัยพยากรณ์แบบ 1-step-ahead บนชุด Test (2020–2024) เท่านั้น ไม่ได้ผลิตค่าพยากรณ์ล่วงหน้าเลยปี 2024 forecast.csv จึงว่าง และหน้าเว็บแสดง N/A",
+    "trend": "แนวโน้มเชิงเส้นคำนวณจากอนุกรม SLA ที่แสดงบนกราฟด้วย np.polyfit(deg=1) ซึ่งเป็นวิธีเดียวกับ detrend_linear() ในโน้ตบุ๊ก เป็นสถิติเชิงพรรณนาของข้อมูล ไม่ใช่ผลลัพธ์ของแบบจำลอง",
+    "descriptive_stats": "Mean / Min / Max / SD คำนวณจากอนุกรม SLA เต็มช่วง 1993-01 ถึง 2024-12 (384 เดือน) ของแต่ละสถานี"
+  }
+}

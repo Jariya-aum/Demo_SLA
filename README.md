@@ -1,0 +1,217 @@
+# Web Map App — การติดตามและพยากรณ์ความผิดปกติของระดับน้ำทะเล อ่าวไทยตอนบน
+
+ระบบ **แสดงผลการศึกษา (research result visualization)** ไม่ใช่ระบบ real-time
+ทุกตัวเลขในหน้าเว็บมาจากไฟล์ผลการศึกษาที่คำนวณไว้แล้ว หน้าเว็บไม่ฝึกแบบจำลอง
+ไม่คำนวณค่าพยากรณ์ และไม่แก้ไขผลทางวิทยาศาสตร์ใด ๆ
+
+* พื้นที่ศึกษา 4 สถานีในอ่าวไทยตอนบน
+* ข้อมูล SLA จาก Copernicus Marine Service (CMEMS) รายเดือน ค.ศ. 1993–2024
+* ตัวแปรอุตุนิยมวิทยาจาก ERA5 (SST, SLP, u10, v10)
+* แบบจำลอง SARIMA · Random Forest · LSTM (พยากรณ์ล่วงหน้า 1 เดือน)
+
+### ไฟล์ชุดนี้อยู่สองที่
+
+| ที่อยู่ | โครงสร้าง | ใช้ทำอะไร |
+|---|---|---|
+| [`Demo_SLA`](https://github.com/Jariya-aum/Demo_SLA) โฟลเดอร์ `webapp/` | เว็บอยู่ใต้ `webapp/` พร้อมโน้ตบุ๊ก, `Rawdata/` และ `scripts/` | ต้นทางของงานวิจัย — ที่สำหรับ**สร้างข้อมูลใหม่** |
+| [`Demo_SLA_Web_app`](https://github.com/Jariya-aum/Demo_SLA_Web_app) | ไฟล์เว็บอยู่ที่ **root** ของ repo | repo สำหรับ**เผยแพร่เว็บ** — Pages เสิร์ฟจาก `main / (root)` |
+
+repo เว็บเดี่ยวไม่มีโน้ตบุ๊ก ไฟล์ NetCDF และสคริปต์ build (ไฟล์ใหญ่และไม่จำเป็นต่อการเปิดเว็บ)
+ถ้าต้องสร้างไฟล์ใน `data/` ใหม่ ให้ทำใน repo `Demo_SLA` แล้วซิงก์มาด้วยคำสั่งท้ายเอกสารนี้
+
+> คำสั่งในเอกสารนี้เขียนแบบ repo งานวิจัย (`cd webapp`, `python scripts/build_web_data.py`)
+> ถ้าอ่านจาก repo เว็บเดี่ยว ให้ข้าม `cd webapp` เพราะอยู่ที่ root อยู่แล้ว
+
+---
+
+## 1. เปิดใช้งาน
+
+### เปิดในเครื่อง
+
+หน้าเว็บอ่านไฟล์ใน `data/` ด้วย `fetch()` เบราว์เซอร์จะบล็อกถ้าเปิดด้วย `file://`
+จึงต้องเสิร์ฟผ่าน HTTP:
+
+```bash
+cd webapp
+python -m http.server 8000
+# เปิด http://localhost:8000
+```
+
+### GitHub Pages
+
+`.github/workflows/deploy-pages.yml` จะคัดลอกโฟลเดอร์ `webapp/` ทั้งก้อน
+ขึ้นแบรนช์ `gh-pages` ทุกครั้งที่ push เข้า `main` โดยไม่ต้อง build
+(ตั้งค่า Pages เป็น *Deploy from a branch → gh-pages → / (root)*)
+
+ทุก path ในเว็บเป็น relative path ล้วน จึงทำงานได้ทั้งที่ root ของโดเมน
+และใต้ path ย่อยอย่าง `https://<user>.github.io/Demo_SLA/`
+
+---
+
+## 2. โครงสร้าง
+
+```
+webapp/
+├── index.html                  โครงหน้าเว็บทั้ง 5 เมนู (single page, hash routing)
+├── css/style.css               ธีม scientific/marine + โหมดสว่าง-มืด
+├── js/
+│   ├── data.js                 โหลด CSV/GeoJSON/JSON และตรวจความครบถ้วน
+│   ├── charts.js               กราฟทั้งหมด (Plotly.js)
+│   ├── map.js                  แผนที่ (Leaflet) สถานี + Study box + ชั้นภาพ GEE
+│   ├── report.js               เดชบอร์ดรายงานอัตโนมัติ (เรียบเรียงบทสรุปจากข้อมูล)
+│   └── app.js                  สถานะร่วม routing และการเรนเดอร์แต่ละหน้า
+├── data/                       ข้อมูลที่แปลงจากผลการศึกษา (ดูข้อ 3)
+├── assets/
+│   ├── images/favicon.svg
+│   └── gee/                    ภาพ remote sensing ที่ export จาก GEE (ดู README ในโฟลเดอร์)
+└── .nojekyll
+```
+
+ไลบรารีโหลดจาก CDN (cdnjs) ไม่มี npm/bundler และไม่มี API key ใด ๆ ในซอร์ส:
+
+| ไลบรารี | เวอร์ชัน | ใช้ทำอะไร |
+|---|---|---|
+| Leaflet | 1.9.4 | แผนที่เว็บ |
+| Plotly.js (basic bundle) | 2.35.3 | กราฟทุกชนิด |
+| Papa Parse | 5.4.1 | อ่าน CSV |
+
+---
+
+## 3. ไฟล์ข้อมูลใน `data/`
+
+สร้างด้วย `python scripts/build_web_data.py` (อยู่ที่ราก repo) ห้ามแก้ด้วยมือ
+
+| ไฟล์ | เนื้อหา | มาจาก |
+|---|---|---|
+| `stations.geojson` | จุดสถานี 4 จุด + Study box ±0.25° | `CONFIG` ในโน้ตบุ๊ก |
+| `sla_historical.csv` | SLA รายเดือน 1993-01 – 2024-12 × 4 สถานี (1,536 แถว) | `Rawdata/sla_monthly_1993_2024.nc` |
+| `meteorology.csv` | SST / SLP / u10 / v10 รายเดือน × 4 สถานี (1,536 แถว) | `Rawdata/era5_monthly_1993_2024.nc` |
+| `model_predictions.csv` | ค่าจริง vs ค่าพยากรณ์ชุด Test (720 แถว) | `test_predictions_3models.csv` |
+| `model_metrics.csv` | MSE / MAE / RMSE / R² (12 แถว) + คอลัมน์ `is_best` | `final_metrics_3models.csv` |
+| `model_settings.csv` | พารามิเตอร์สุดท้ายของแต่ละแบบจำลอง | `model_settings_3models.csv` |
+| `rf_feature_importance.csv` | MDI + permutation ต่อสถานี (44 แถว) | `rf_feature_importance_by_station.csv` |
+| `monthly_climatology.csv` | ค่าเฉลี่ยรายเดือนตามปฏิทิน (48 แถว) | `monthly_climatology_long.csv` |
+| `forecast.csv` | **มีแต่หัวตาราง** — ดูข้อ 5 | — |
+| `meta.json` | provenance, ช่วง split, สถิติเชิงพรรณนา, หมายเหตุ | รวมจากทุกแหล่งข้างต้น |
+
+`is_best` ในไฟล์ metric คำนวณโดยเลือกแถวที่ RMSE ต่ำสุดของแต่ละสถานี
+ไม่ได้เปลี่ยนค่าตัวชี้วัดใด ๆ
+
+**สองไฟล์นี้มาจากเซลล์ที่ต้องสั่งรันแยกในโน้ตบุ๊ก**
+
+| ไฟล์ปลายทาง | ไฟล์ต้นทาง | เซลล์ที่สร้าง |
+|---|---|---|
+| `rf_feature_importance.csv` | `rf_feature_importance_by_station.csv` | 13.5b — RF FEATURE IMPORTANCE |
+| `monthly_climatology.csv` | `monthly_climatology_long.csv` | Monthly Climatology (หัวข้อ 4.1.2.1) |
+
+สคริปต์ค้นไฟล์ต้นทางสองตัวนี้ตามลำดับ
+
+1. `outputs_fair_comparison/separated_preprocessing/` (เฉพาะไฟล์ feature importance)
+2. `outputs_fair_comparison/`
+3. **รากของ repo** — ตำแหน่งที่ไฟล์สองตัวนี้วางอยู่ตอนนี้
+
+ถ้าหาไม่เจอทั้งสามที่ สคริปต์จะ **คงไฟล์เดิมใน `data/` ไว้พร้อมเตือนบนหน้าจอ**
+ไม่เขียนทับด้วยไฟล์ว่างและไม่สร้างค่าขึ้นมาแทน
+แต่ถ้ายังไม่เคย build ไว้เลย สคริปต์จะหยุดและบอกว่าต้องรันเซลล์ไหนก่อน
+
+ไฟล์ `rf_feature_importance_by_station.csv` ยังบันทึกการตั้งค่าของ permutation
+importance ไว้ด้วย (`Perm_N_Repeats`, `N_Test`, `N_TrainVal`) สคริปต์คัดค่าเหล่านี้
+ลง `meta.json` ที่คีย์ `experiment.rf_importance` เพื่อให้หน้ารายงานอ้างอิงได้ว่า
+ค่า dRMSE วัดมาอย่างไร (สุ่มสลับ 30 รอบ บนชุด Test 60 เดือน)
+
+---
+
+## 4. เมนูในเว็บ
+
+| เมนู | แสดงอะไร |
+|---|---|
+| **Overview** | แผนที่ 4 สถานี + Study box, ชื่อ/พิกัด, SLA ล่าสุด, แนวโน้ม, Best model, ตารางสรุป |
+| **SLA Analysis** | อนุกรมเวลา SLA + เส้นแนวโน้ม, Mean/Min/Max/SD, ค่าเฉลี่ยรายเดือนตามปฏิทิน |
+| **Meteorological Variables** | อนุกรมเวลา SST / SLP / u10 / v10 แยกแผงละหนึ่งหน่วย |
+| **Model Results & Forecast** | ตารางเปรียบเทียบ 3 แบบจำลอง, Observed vs Predicted, scatter 1:1, residual, Historical→Prediction→Forecast, RF feature importance, พารามิเตอร์แบบจำลอง |
+| **รายงานอัตโนมัติ · Report** | บทสรุปผู้บริหาร, ข้อค้นพบสำคัญ, ตารางที่ 1–6, รายงานรายสถานี, ภาคผนวกวิธีการ — เรียบเรียงใหม่จากไฟล์ข้อมูลทุกครั้งที่เปิด (ดูข้อ 5) |
+
+เลือกสถานีที่เมนูใดก็ได้ ค่าที่เลือกจะติดตามไปทุกหน้า
+(หน้ารายงานสรุปทั้ง 4 สถานีพร้อมกัน จึงไม่มีตัวเลือกสถานี)
+
+### สีประจำแบบจำลอง
+
+ใช้ค่าเดียวกับกราฟในเล่มวิทยานิพนธ์ และเพิ่มรูปแบบเส้นกำกับซ้ำ
+เพื่อให้แยกออกแม้ผู้อ่านแยกสีได้ยากหรือพิมพ์ขาวดำ
+
+| ชุดข้อมูล | สี | เส้น |
+|---|---|---|
+| Observed (ค่าจริง) | หมึกดำ/ขาวตามธีม | ทึบ หนา |
+| SARIMA | `#008300` | เส้นประ |
+| Random Forest | `#9b4f96` | ประ-จุด |
+| LSTM | `#1baf7a` | จุด |
+| SLA / ตัวแปร ERA5 | `#2a78d6` | ทึบ |
+
+---
+
+## 5. หน้ารายงานอัตโนมัติ
+
+เมนู **รายงานอัตโนมัติ · Report** ไม่ได้เก็บข้อความสรุปหรือตัวเลขไว้ในหน้าเว็บเลย
+`js/report.js` อ่านไฟล์ใน `data/` แล้วเรียบเรียงรายงานใหม่ทุกครั้งที่เปิดหน้า
+ถ้ารัน `python scripts/build_web_data.py` ใหม่ รายงานจะเปลี่ยนตามข้อมูลเองทั้งฉบับ
+
+**สิ่งที่หน้านี้ทำ**
+
+* อ่านค่าตรงจากไฟล์ — SLA, ERA5, ค่าพยากรณ์, MSE/MAE/RMSE/R², feature importance,
+  climatology, พารามิเตอร์แบบจำลอง
+* สรุปเชิงพรรณนาเพิ่มจากค่าเดิม — จัดอันดับแบบจำลองด้วย RMSE, นับจำนวนสถานีที่แต่ละ
+  แบบจำลองชนะ, ค่าเฉลี่ยข้ามสถานี, ส่วนต่างร้อยละระหว่างอันดับ 1 กับอันดับ 2,
+  ผลรวม MDI ตามกลุ่มฟีเจอร์ (ทุกตารางกำกับไว้ว่าค่าใดเป็นการสรุป)
+
+**สิ่งที่หน้านี้ไม่ทำ** — ไม่ฝึกแบบจำลองใหม่ ไม่คำนวณค่าพยากรณ์ใหม่ ไม่แก้ metric
+และไม่เดาค่าที่ไม่มีในไฟล์ (แสดง `N/A` แทน)
+
+**ปุ่มบนหัวรายงาน**
+
+| ปุ่ม | ทำอะไร |
+|---|---|
+| พิมพ์ / บันทึกเป็น PDF | ใช้ `window.print()` มี stylesheet สำหรับพิมพ์แยก — บังคับโทนสว่าง ซ่อนแถบเมนู ตั้งกระดาษ A4 และพิมพ์เฉพาะหน้ารายงานแม้สั่งพิมพ์จากหน้าอื่น |
+| คัดลอกบทสรุป | คัดลอกบทสรุปและตาราง RMSE เป็นข้อความล้วนไปวางในเอกสารรายงานได้ทันที |
+
+---
+
+## 6. ข้อจำกัดที่ต้องรู้
+
+**ไม่มีค่าพยากรณ์ล่วงหน้าหลังปี 2024** — งานวิจัยพยากรณ์แบบ 1-step-ahead
+บนชุด Test (2020–2024) เท่านั้น ไม่ได้ผลิตค่าพยากรณ์ของเดือนที่ยังไม่มีข้อมูลจริง
+`forecast.csv` จึงว่าง และหน้าเว็บแสดง **N/A** ตามความเป็นจริง
+ไม่มีการสร้างค่าพยากรณ์ขึ้นเองในหน้าเว็บ
+
+หากภายหลังมีผลพยากรณ์อนาคตจากงานวิจัย ให้เติมแถวลงใน `forecast.csv`
+ตามหัวตาราง `station,date,model,forecast_m,lower_m,upper_m`
+หน้าเว็บจะวาดเส้น Forecast ให้อัตโนมัติ
+
+**แนวโน้มเป็นสถิติเชิงพรรณนา** — ค่า mm/ปี คำนวณจากอนุกรม SLA ที่แสดงบนกราฟ
+ด้วยการถดถอยเชิงเส้น (วิธีเดียวกับ `detrend_linear()` ในโน้ตบุ๊ก)
+ไม่ใช่ผลลัพธ์ของแบบจำลองใด และไม่มีอยู่ในตารางผลการศึกษาเดิม
+
+**ภาพ Google Earth Engine** — หน้าเว็บไม่เรียก GEE โดยตรง เพราะต้องยืนยันตัวตน
+ชั้น "ภาพถ่ายดาวเทียม" ที่ให้มาเป็น Esri World Imagery (เปิดสาธารณะ ไม่ต้องใช้คีย์)
+ถ้าต้องการภาพ Sentinel-2 / Landsat จาก GEE จริง ๆ ให้ export ไว้ล่วงหน้า
+แล้ววางใน `assets/gee/` ตามวิธีใน `assets/gee/README.md`
+
+---
+
+## 7. ซิงก์ขึ้น repo เว็บเดี่ยว
+
+`Demo_SLA_Web_app` รับไฟล์จากโฟลเดอร์ `webapp/` ของ repo งานวิจัยผ่าน `git subtree`
+ซึ่งยก `webapp/` ขึ้นเป็น root ของ branch `main` ให้เอง
+
+```bash
+# ครั้งแรก — ผูก remote (ทำในโฟลเดอร์ repo Demo_SLA)
+git remote add webapp-repo https://github.com/Jariya-aum/Demo_SLA_Web_app.git
+
+# ทุกครั้งที่แก้ webapp/ แล้ว commit ลง main เรียบร้อย
+git subtree push --prefix=webapp webapp-repo main
+```
+
+ต้อง commit การแก้ไขลง `main` ของ repo งานวิจัยก่อน `subtree push` จึงจะเห็นการเปลี่ยนแปลง
+(subtree อ่านจาก commit ไม่ได้อ่านจากไฟล์ในเครื่อง)
+
+ตั้งค่า Pages ของ repo เว็บเดี่ยวที่ **Settings → Pages → Deploy from a branch →
+`main` / `(root)`** — ไม่ต้องใช้ GitHub Actions เพราะไฟล์อยู่ที่ root และเป็น static ล้วน

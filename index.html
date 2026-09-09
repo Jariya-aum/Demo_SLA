@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SLA Upper Gulf of Thailand — ระบบแสดงผลการติดตามและพยากรณ์ความผิดปกติของระดับน้ำทะเล</title>
+  <meta name="description" content="Web Map App แสดงผลการศึกษา Sea Level Anomaly (CMEMS) และการพยากรณ์ด้วย SARIMA, Random Forest และ LSTM ที่ 4 สถานีในอ่าวไทยตอนบน">
+
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+
+  <!-- Leaflet 1.9.4 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="shell">
+
+<!-- ==================================================================== -->
+<!-- แถบข้าง — เมนูหลักและที่มาข้อมูล                                       -->
+<!-- ==================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand__mark" aria-hidden="true">SLA</div>
+    <div class="brand__text">
+      <div class="brand__title">อ่าวไทยตอนบน</div>
+      <div class="brand__sub">Sea Level Anomaly</div>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="เมนูหลัก">
+    <div class="nav__group">ภาพรวม</div>
+        <a class="nav__link" href="#/overview" data-route="overview"><span class="nav__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 14h7v7H3z"/></svg></span><span class="nav__txt">พื้นที่ศึกษา</span></a>
+    <div class="nav__group">ข้อมูลการศึกษา</div>
+        <a class="nav__link" href="#/sla" data-route="sla"><span class="nav__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 5 4"/><path d="M2 18c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/></svg></span><span class="nav__txt">การวิเคราะห์ SLA</span></a>
+        <a class="nav__link" href="#/meteorology" data-route="meteorology"><span class="nav__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 16h13a3 3 0 1 1-3 3"/><path d="M3 12h18"/></svg></span><span class="nav__txt">ตัวแปรอุตุนิยมวิทยา</span></a>
+    <div class="nav__group">ผลแบบจำลอง</div>
+        <a class="nav__link" href="#/models" data-route="models"><span class="nav__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20h-20"/></svg></span><span class="nav__txt">ผลการพยากรณ์</span></a>
+        <a class="nav__link" href="#/report" data-route="report"><span class="nav__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6z"/><path d="M14 2v5h5M9 13h6M9 17h4"/></svg></span><span class="nav__txt">รายงานอัตโนมัติ</span></a>
+  </nav>
+
+  <div class="side-foot" id="sideFoot"></div>
+</aside>
+
+<button id="sideToggle" class="side-toggle" type="button"
+        aria-label="ย่อ/ขยายแถบเมนู" title="ย่อ/ขยายแถบเมนู">‹</button>
+
+<div class="main">
+
+<!-- ==================================================================== -->
+<!-- แถบบน — ตัวเลือกสถานีที่ใช้ร่วมกันทุกหน้า                              -->
+<!-- ==================================================================== -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="topbar__crumb">
+      <span>ระบบแสดงผลการศึกษา</span>
+      <span class="topbar__sep">/</span>
+      <b id="crumbPage">ภาพรวม</b>
+    </div>
+
+    <div class="topbar__spacer"></div>
+
+    <div class="station-pick">
+      <span class="station-pick__lb">สถานี</span>
+      <label class="visually-hidden" for="topStation">เลือกสถานี</label>
+      <select id="topStation" data-station-select></select>
+    </div>
+
+    <button id="printReport" class="btn no-print" type="button"
+            title="เปิดหน้ารายงานเพื่อพิมพ์หรือบันทึกเป็น PDF">พิมพ์รายงาน</button>
+
+    <button id="themeToggle" class="theme-toggle" type="button"
+            title="สลับโหมดสว่าง/มืด" aria-label="สลับโหมดสว่าง/มืด">◐</button>
+  </div>
+</header>
+
+<div id="boot">กำลังโหลดข้อมูลผลการศึกษา…</div>
+
+<main class="page-wrap" id="app" hidden>
+
+  <!-- ==================================================================== -->
+  <!-- หน้า 1 — Overview                                                    -->
+  <!-- ==================================================================== -->
+  <section class="page" id="page-overview" data-route="overview" aria-labelledby="h-overview">
+    <div class="page-head">
+      <h1 id="h-overview">ภาพรวมพื้นที่ศึกษา</h1>
+      <p>
+        แผนที่พื้นที่ศึกษา 4 สถานีบริเวณอ่าวไทยตอนบน พร้อม Study Box (กล่องเฉลี่ยเชิงพื้นที่)
+        ที่ใช้ดึงค่า SLA และตัวแปร ERA5 คลิกหมุดหรือรายการสถานีเพื่อดูรายละเอียด
+      </p>
+      <div class="sourcebar" id="sourcebar"></div>
+    </div>
+
+    <!-- การ์ดตัวเลขหลักของสถานีที่เลือก — ค่าทั้งหมดอ่านจากไฟล์ผลการศึกษา -->
+    <div class="stats" id="statCards"></div>
+
+    <div class="section grid grid--overview">
+      <div class="card">
+        <div class="card__head">
+          <h3>แผนที่พื้นที่ศึกษา</h3>
+          <span class="sub" id="mapBoxNote"></span>
+        </div>
+        <div id="map" role="region" aria-label="แผนที่สถานีศึกษาในอ่าวไทยตอนบน"></div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h3>สถานีศึกษา</h3>
+          <span class="sub">เรียงตามลำดับใน CONFIG ของงานวิจัย</span>
+        </div>
+        <div class="card__body">
+          <div class="station-list" id="stationList" role="group" aria-label="เลือกสถานี"></div>
+          <div id="stationDetail"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h2>สรุปรายสถานี</h2>
+        <span class="hint">ค่า SLA ล่าสุดในชุดข้อมูลการศึกษา · แนวโน้มเชิงเส้น · แบบจำลองที่ดีที่สุด (RMSE ต่ำสุด บนชุด Test)</span>
+      </div>
+      <div class="card">
+        <div class="card__body table-scroll">
+          <table class="data" id="overviewTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section grid grid--2">
+      <div class="card">
+        <div class="card__head"><h3>RMSE ของแบบจำลองที่ดีที่สุดในแต่ละสถานี</h3><span class="sub">หน่วยเมตร · ยิ่งต่ำยิ่งดี</span></div>
+        <div class="card__body card__body--flush"><div id="plotBestRmse" class="plot plot--short"></div></div>
+      </div>
+      <div class="card">
+        <div class="card__head"><h3>แนวโน้ม SLA ของแต่ละสถานี</h3><span class="sub">มิลลิเมตรต่อปี · เส้นถดถอยเชิงเส้นของอนุกรม 1993–2024</span></div>
+        <div class="card__body card__body--flush"><div id="plotTrend" class="plot plot--short"></div></div>
+      </div>
+    </div>
+
+    <div class="section grid grid--2">
+      <div class="card">
+        <div class="card__head">
+          <h3>สัดส่วนความสำคัญของตัวแปร</h3>
+          <span class="sub">Random Forest · MDI เฉลี่ยข้ามสถานี แยกตามกลุ่มตัวแปร</span>
+        </div>
+        <div class="card__body">
+          <div class="grid grid--2" style="gap: 6px; align-items: center;">
+            <div id="plotGroupDonut" class="plot plot--short"></div>
+            <div class="legend-list" id="groupLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <h3>ความแม่นของแบบจำลอง <span class="sub" data-bind="r2StationLabel"></span></h3>
+          <span class="sub spacer">R² บนชุด Test · สัดส่วนความแปรปรวนที่อธิบายได้</span>
+        </div>
+        <div class="card__body">
+          <div class="meters" id="r2Meters"></div>
+          <p class="legend-note" style="margin-top: 14px;" id="r2Note"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- หน้า 2 — SLA Analysis                                                -->
+  <!-- ==================================================================== -->
+  <section class="page" id="page-sla" data-route="sla" aria-labelledby="h-sla">
+    <div class="page-head">
+      <h1 id="h-sla">การวิเคราะห์ SLA ในอดีต</h1>
+      <p>
+        อนุกรมเวลา Sea Level Anomaly รายเดือน จาก Copernicus Marine Service (CMEMS)
+        เฉลี่ยเชิงพื้นที่ในกล่อง ±<span data-bind="buffer"></span>° รอบพิกัดสถานี
+      </p>
+    </div>
+
+    <div class="filterbar">
+      <div class="field">
+        <label for="slaStation">สถานี · Station</label>
+        <select id="slaStation" data-station-select></select>
+      </div>
+      <div class="field">
+        <label for="slaSplitToggle">ช่วงข้อมูลแบบจำลอง</label>
+        <div class="chips">
+          <button class="chip" id="slaSplitToggle" type="button" aria-pressed="true">
+            แสดงแถบ Train / Validation / Test
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tiles" id="slaTiles"></div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>อนุกรมเวลา SLA <span class="sub" data-bind="slaStationLabel"></span></h3>
+        <span class="sub spacer" id="slaRangeNote"></span>
+      </div>
+      <div class="card__body card__body--flush"><div id="plotSlaSeries" class="plot plot--tall"></div></div>
+      <div class="card__body">
+        <p class="legend-note" id="slaTrendNote"></p>
+        <details class="disclosure">
+          <summary>ดูข้อมูลเป็นตาราง (ค่า SLA รายเดือนของสถานีที่เลือก)</summary>
+          <div class="table-scroll" style="max-height: 340px; overflow-y: auto;">
+            <table class="data" id="slaTable"></table>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>ค่าเฉลี่ยรายเดือนตามปฏิทิน (Monthly Climatology)</h3>
+        <span class="sub">ผลจากงานวิจัย · เฉลี่ยข้ามปี 1993–2024 (32 ปี) พร้อมแถบ ±1 SD</span>
+      </div>
+      <div class="card__body card__body--flush"><div id="plotClimatology" class="plot plot--mid"></div></div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- หน้า 3 — Meteorological Variables                                    -->
+  <!-- ==================================================================== -->
+  <section class="page" id="page-meteorology" data-route="meteorology" aria-labelledby="h-met">
+    <div class="page-head">
+      <h1 id="h-met">ตัวแปรอุตุนิยมวิทยา (ERA5)</h1>
+      <p>
+        ตัวแปรจาก ERA5 reanalysis ที่ใช้เป็น input ของแบบจำลอง Random Forest และ LSTM
+        เฉลี่ยเชิงพื้นที่ในกล่องเดียวกับ SLA (±<span data-bind="buffer"></span>°)
+        แต่ละแผงเป็นอนุกรมเดียว จึงไม่มีการนำสองหน่วยมาไว้บนแกนเดียวกัน
+      </p>
+    </div>
+
+    <div class="filterbar">
+      <div class="field">
+        <label for="metStation">สถานี · Station</label>
+        <select id="metStation" data-station-select></select>
+      </div>
+      <div class="field">
+        <label>ตัวแปรที่แสดง</label>
+        <div class="chips" id="metVarChips"></div>
+      </div>
+    </div>
+
+    <div id="metPanels" class="grid"></div>
+
+    <div class="section">
+      <div class="callout">
+        <strong>หมายเหตุ</strong> — SST แปลงจากเคลวินเป็นองศาเซลเซียส และ SLP แปลงจากปาสคาลเป็นเฮกโตปาสคาล
+        โดยอ่านหน่วยจาก metadata ของไฟล์ NetCDF ตามที่โน้ตบุ๊กทำ ไม่ใช้ค่าคงที่แบบเดา
+        ส่วน u10 / v10 คงหน่วยเดิม (เมตรต่อวินาที)
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- หน้า 4 — Model Results & Forecast                                    -->
+  <!-- ==================================================================== -->
+  <section class="page" id="page-models" data-route="models" aria-labelledby="h-models">
+    <div class="page-head">
+      <h1 id="h-models">ผลการพยากรณ์และเปรียบเทียบแบบจำลอง</h1>
+      <p>
+        ผลบนชุดทดสอบ (Test) เดือนมกราคม 2020 – ธันวาคม 2024 แบบ 1-step-ahead บนสเกลจริง (เมตร)
+        ทั้งสามแบบจำลองใช้ข้อมูล ช่วงแบ่ง target และ forecast horizon ชุดเดียวกัน
+        ตัวเลขทั้งหมดนำมาจากไฟล์ผลการศึกษาโดยตรง ไม่มีการคำนวณใหม่ในหน้าเว็บ
+      </p>
+    </div>
+
+    <div class="filterbar">
+      <div class="field">
+        <label for="modelStation">สถานี · Station</label>
+        <select id="modelStation" data-station-select></select>
+      </div>
+      <div class="field">
+        <label>แบบจำลองที่แสดงบนกราฟ</label>
+        <div class="chips" id="modelChips"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h2>ตารางเปรียบเทียบประสิทธิภาพแบบจำลอง</h2>
+        <span class="hint">แถวที่ไฮไลต์ = แบบจำลองที่ดีที่สุดของสถานีนั้น (RMSE ต่ำสุด)</span>
+      </div>
+      <div class="card">
+        <div class="card__body table-scroll">
+          <table class="data" id="metricsTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>ค่าจริง vs ค่าพยากรณ์ <span class="sub" data-bind="modelStationLabel"></span></h3>
+        <span class="sub spacer">Test 2020-01 – 2024-12 · 60 เดือน</span>
+      </div>
+      <div class="card__body card__body--flush"><div id="plotObsPred" class="plot plot--tall"></div></div>
+    </div>
+
+    <div class="section grid grid--2">
+      <div class="card">
+        <div class="card__head"><h3>Predicted vs Actual</h3><span class="sub">เส้นทแยง = ทำนายตรงพอดี (1:1)</span></div>
+        <div class="card__body card__body--flush"><div id="plotScatter" class="plot plot--mid"></div></div>
+      </div>
+      <div class="card">
+        <div class="card__head"><h3>ค่าคลาดเคลื่อนรายเดือน (Residual)</h3><span class="sub">ค่าจริง − ค่าพยากรณ์ · หน่วยเมตร</span></div>
+        <div class="card__body card__body--flush"><div id="plotResidual" class="plot plot--mid"></div></div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>Historical → Prediction → Forecast</h3>
+        <span class="sub spacer">อนุกรมเต็มช่วง 1993–2024 ต่อด้วยค่าพยากรณ์ในช่วง Test</span>
+      </div>
+      <div class="card__body card__body--flush"><div id="plotForecast" class="plot plot--tall"></div></div>
+      <div class="card__body">
+        <div class="na-panel">
+          <div class="na-panel__value">Forecast หลังปี 2024 : N/A</div>
+          <p id="forecastNote"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>Random Forest — Feature Importance</h3>
+        <span class="sub spacer" id="fiNote"></span>
+      </div>
+      <div class="card__body">
+        <div class="chips" id="fiMetricChips" style="margin-bottom: 10px;"></div>
+        <div id="plotFeatureImportance" class="plot plot--tall"></div>
+        <details class="disclosure">
+          <summary>ดูข้อมูลเป็นตาราง (feature importance ของสถานีที่เลือก)</summary>
+          <div class="table-scroll"><table class="data" id="fiTable"></table></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h3>พารามิเตอร์สุดท้ายของแต่ละแบบจำลอง</h3>
+        <span class="sub">ค่าที่ถูกเลือกด้วยชุด Validation เท่านั้น (ไม่แตะชุด Test)</span>
+      </div>
+      <div class="card__body table-scroll">
+        <table class="data" id="settingsTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- หน้า 5 — รายงานอัตโนมัติ (เรียบเรียงจากไฟล์ข้อมูลทุกครั้งที่เปิดหน้า)   -->
+  <!-- ==================================================================== -->
+  <section class="page page--report" id="page-report" data-route="report" aria-labelledby="h-report">
+    <div class="page-head">
+      <h1 id="h-report">รายงานผลการศึกษา (สร้างอัตโนมัติ)</h1>
+      <p>
+        หน้านี้เรียบเรียงบทสรุป ตาราง และข้อค้นพบจากไฟล์ผลการศึกษาในโฟลเดอร์
+        <code>data/</code> ใหม่ทุกครั้งที่เปิด ไม่มีตัวเลขหรือข้อสรุปใดเขียนค้างไว้ในหน้าเว็บ
+        เมื่อสร้างไฟล์ข้อมูลใหม่ด้วย <code>scripts/build_web_data.py</code> รายงานจะเปลี่ยนตามเอง
+      </p>
+    </div>
+
+    <div id="reportHeader" class="report-banner"></div>
+
+    <div class="tiles" id="reportTiles"></div>
+
+    <div class="section card">
+      <div class="card__head">
+        <h2>บทสรุปและข้อค้นพบสำคัญ</h2>
+        <span class="sub spacer">เรียบเรียงจากค่าที่อ่านได้จริงในไฟล์ผลการศึกษา</span>
+      </div>
+      <div class="card__body" id="reportSummary"></div>
+    </div>
+
+    <div class="section card">
+      <div class="card__body table-scroll"><table class="data" id="reportStationTable"></table></div>
+    </div>
+
+    <div class="section card">
+      <div class="card__body table-scroll"><table class="data" id="reportMatrix"></table></div>
+    </div>
+
+    <div class="section grid grid--2">
+      <div class="card">
+        <div class="card__head"><h3>RMSE ของแบบจำลองที่ดีที่สุด</h3><span class="sub">รูปที่ 1 · หน่วยเมตร</span></div>
+        <div class="card__body card__body--flush"><div id="reportPlotRmse" class="plot plot--short"></div></div>
+      </div>
+      <div class="card">
+        <div class="card__head"><h3>แนวโน้ม SLA รายสถานี</h3><span class="sub">รูปที่ 2 · มิลลิเมตรต่อปี</span></div>
+        <div class="card__body card__body--flush"><div id="reportPlotTrend" class="plot plot--short"></div></div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="card__body table-scroll"><table class="data" id="reportModelTable"></table></div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h2>รายงานรายสถานี</h2>
+        <span class="hint">สถิติ SLA · อันดับแบบจำลอง · ตัวแปรสำคัญของ Random Forest</span>
+      </div>
+      <div class="report-cards" id="reportStationCards"></div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h2>ตัวแปรที่ป้อนแบบจำลองและความสำคัญของตัวแปร</h2>
+        <span class="hint" id="reportFiNote"></span>
+      </div>
+      <div class="card">
+        <div class="card__body table-scroll"><table class="data" id="reportMetTable"></table></div>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <div class="card__body table-scroll"><table class="data" id="reportFiTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head"><h2>ขอบเขตการพยากรณ์</h2></div>
+      <div class="card"><div class="card__body" id="reportForecast"></div></div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <h2>ภาคผนวก · วิธีการและที่มาของข้อมูล</h2>
+        <span class="hint">ค่าทั้งหมดคัดลอกจาก CONFIG ของโน้ตบุ๊ก ไม่มีการเปลี่ยนแปลง</span>
+      </div>
+      <div class="card">
+        <div class="card__head"><h3>การตั้งค่าการทดลอง</h3></div>
+        <div class="card__body" id="reportMethod"></div>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <div class="card__body table-scroll"><table class="data" id="reportSettingsTable"></table></div>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <div class="card__head"><h3>แหล่งข้อมูล</h3></div>
+        <div class="card__body"><dl class="spec" id="reportSources"></dl></div>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <div class="card__head"><h3>หมายเหตุประกอบการอ่านผล</h3></div>
+        <div class="card__body"><ul class="notes-list" id="reportNotes"></ul></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div id="footerMeta"></div>
+</footer>
+
+</div><!-- /.main -->
+</div><!-- /.shell -->
+
+<!-- Libraries (CDN) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.3/plotly-basic.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- App -->
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/map.js"></script>
+<script src="js/report.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
