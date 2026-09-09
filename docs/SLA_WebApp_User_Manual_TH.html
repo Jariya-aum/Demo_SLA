@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>คู่มือการใช้งาน — ระบบแผนที่เว็บแสดงผล SLA อ่าวไทยตอนบน</title>
+<style>
+  /* ฟอนต์ไทยของ Windows ที่มีสระและวรรณยุกต์ครบ เรียงจากที่อ่านง่ายที่สุด */
+  :root {
+    --ink: #16181c;
+    --ink2: #3d4148;
+    --ink3: #6b7078;
+    --line: #c8ccd2;
+    --line2: #e2e5ea;
+    --bg2: #f4f6f8;
+    --accent: #14507d;
+    --warn: #b3400c;
+    --font: "Leelawadee UI", "Sarabun", "Tahoma", "Segoe UI", sans-serif;
+    --mono: "Cascadia Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: var(--font);
+    font-size: 9.8pt;
+    line-height: 1.5;
+    color: var(--ink2);
+    margin: 0;
+  }
+  @page { size: A4 portrait; margin: 14mm 13mm 13mm; }
+
+  h1, h2, h3 { color: var(--ink); line-height: 1.32; }
+  h2 {
+    font-size: 14.5pt; margin: 0 0 9pt;
+    padding-bottom: 4pt; border-bottom: 1.4pt solid var(--accent);
+    display: flex; align-items: baseline; gap: 8pt;
+  }
+  h2--plain, .h2--plain { display: block; }
+  .h2__n {
+    background: var(--accent); color: #fff;
+    font-size: 11pt; min-width: 21pt; height: 21pt;
+    border-radius: 3pt; display: inline-flex;
+    align-items: center; justify-content: center; flex: none;
+  }
+  h3 {
+    font-size: 11.2pt; margin: 10pt 0 4.5pt;
+    color: var(--accent);
+    break-after: avoid;
+  }
+  p { margin: 0 0 5pt; text-align: justify; }
+  .lead {
+    font-size: 10.2pt; color: var(--ink);
+    background: var(--bg2); border-left: 2.5pt solid var(--accent);
+    padding: 5.5pt 9pt; margin-bottom: 9pt; text-align: left;
+  }
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--bg2); padding: 0.5pt 3pt;
+    border-radius: 2pt; color: var(--ink);
+    word-break: break-word;
+  }
+  kbd {
+    font-family: var(--mono); font-size: 0.82em;
+    border: 0.7pt solid var(--line); border-bottom-width: 1.6pt;
+    border-radius: 2.5pt; padding: 0.5pt 3.5pt; background: #fff;
+  }
+  .mono { font-family: var(--mono); font-size: 0.86em; }
+  b, strong { color: var(--ink); }
+
+  /* ---- ตาราง ---- */
+  table.t {
+    width: 100%; border-collapse: collapse;
+    font-size: 8.4pt; margin: 3pt 0 8pt;
+    break-inside: avoid;
+  }
+  table.t caption {
+    caption-side: top; text-align: left;
+    font-size: 8pt; color: var(--ink3);
+    padding-bottom: 2.5pt; font-style: italic;
+  }
+  table.t th, table.t td {
+    border: 0.6pt solid var(--line2);
+    padding: 2.8pt 4.5pt; vertical-align: top;
+    text-align: center;
+  }
+  table.t th {
+    background: var(--bg2); color: var(--ink);
+    font-weight: 600; font-size: 8.2pt;
+    text-align: center;
+  }
+  table.t th.text, table.t td.text { text-align: left; }
+  table.t tr { break-inside: avoid; }
+  table.t thead { display: table-header-group; }
+  .sub { font-size: 7.8pt; color: var(--ink3); }
+  .src { font-size: 8.6pt; color: var(--ink3); margin-bottom: 6pt; }
+
+  /* ---- ชิปแบบจำลองและตัวอย่างสี ---- */
+  .chip { display: inline-flex; align-items: center; gap: 4pt; white-space: nowrap; }
+  .sw {
+    width: 8pt; height: 8pt; border-radius: 1.5pt;
+    display: inline-block; flex: none;
+    border: 0.4pt solid rgba(0,0,0,.25);
+  }
+  .sw--ink { background: #16181c; }
+
+  /* ---- กล่องหมายเหตุ ---- */
+  .note {
+    border-left: 2.5pt solid var(--accent);
+    background: #eef4fa;
+    padding: 5.5pt 9pt; margin: 6pt 0 8pt;
+    font-size: 8.9pt; break-inside: avoid;
+  }
+  .note.warn { border-left-color: var(--warn); background: #fdf1ec; }
+  .note__t { display: block; font-weight: 700; color: var(--ink); margin-bottom: 2pt; }
+  .note__b { display: block; }
+
+  /* ---- รายการขั้นตอน ---- */
+  ol.steps { margin: 3pt 0 8pt; padding-left: 16pt; }
+  ol.steps li { margin-bottom: 2.5pt; }
+  ul { margin: 3pt 0 8pt; padding-left: 15pt; }
+  ul li { margin-bottom: 2pt; }
+  ul.cols { column-count: 2; column-gap: 16pt; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li { padding-left: 15pt; position: relative; }
+  ul.check li::before {
+    content: "\2713"; position: absolute; left: 0;
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* ---- คู่ชื่อ–ค่า ---- */
+  dl.kv { margin: 3pt 0 8pt; }
+  dl.kv > div {
+    display: grid; grid-template-columns: 120pt 1fr;
+    gap: 7pt; padding: 2.4pt 0;
+    border-bottom: 0.5pt solid var(--line2);
+    break-inside: avoid;
+  }
+  dl.kv dt { font-size: 8.5pt; color: var(--ink3); }
+  dl.kv dd { margin: 0; font-size: 9.1pt; }
+
+  /* ---- สองคอลัมน์ ทำ/ไม่ทำ ---- */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 9pt; margin: 5pt 0 8pt; }
+  .do, .dont { border: 0.7pt solid var(--line); border-radius: 3pt; padding: 6pt 8pt; break-inside: avoid; }
+  .do { border-top: 2.5pt solid #1f7a4d; }
+  .dont { border-top: 2.5pt solid var(--warn); }
+  .do__h, .dont__h { font-weight: 700; color: var(--ink); margin-bottom: 4pt; font-size: 10pt; }
+  .do__h { color: #1f7a4d; }
+  .dont__h { color: var(--warn); }
+  .do ul, .dont ul { margin: 0; padding-left: 13pt; font-size: 8.4pt; line-height: 1.42; }
+
+  /* ---- แผนผังลำดับข้อมูล ---- */
+  .flow {
+    display: flex; align-items: stretch; gap: 3pt;
+    margin: 5pt 0 9pt; break-inside: avoid;
+  }
+  .flow__i {
+    flex: 1; border: 0.7pt solid var(--line); border-top: 2pt solid var(--accent);
+    border-radius: 3pt; padding: 6pt 5pt; text-align: center;
+    font-size: 8.6pt; font-weight: 600; color: var(--ink);
+  }
+  .flow__i span { display: block; font-weight: 400; font-size: 7.4pt; color: var(--ink3); margin-top: 2pt; }
+  .flow__a { align-self: center; color: var(--accent); font-size: 11pt; flex: none; }
+
+  /* ---- ปกหน้า ---- */
+  .cover {
+    height: 262mm; display: flex; flex-direction: column;
+    justify-content: center; text-align: center;
+    page-break-after: always;
+  }
+  .cover__kicker {
+    font-size: 10pt; letter-spacing: 2pt; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 14pt;
+  }
+  .cover__title { font-size: 23pt; margin: 0 0 9pt; }
+  .cover__sub { font-size: 14pt; color: var(--ink2); margin-bottom: 16pt; }
+  .cover__en {
+    font-size: 10pt; color: var(--ink3); line-height: 1.5;
+    padding-bottom: 18pt; margin-bottom: 20pt;
+    border-bottom: 0.7pt solid var(--line);
+  }
+  .cover__box { text-align: left; max-width: 132mm; margin: 0 auto; }
+  .cover__box dl.kv > div { grid-template-columns: 108pt 1fr; }
+  .cover__foot { margin-top: 22pt; font-size: 8.6pt; color: var(--ink3); }
+
+  /* ---- สารบัญ ---- */
+  ul.toc {
+    list-style: none; padding: 0; margin: 0;
+    column-count: 2; column-gap: 20pt;
+  }
+  ul.toc li {
+    display: flex; gap: 6pt; align-items: baseline;
+    padding: 2.2pt 0; border-bottom: 0.5pt dotted var(--line2);
+    font-size: 9.6pt; color: var(--ink); margin: 0;
+    break-inside: avoid;
+  }
+  .toc__n { min-width: 18pt; color: var(--accent); font-weight: 700; }
+  ul.toc li.toc__sub {
+    padding-left: 24pt; font-size: 8.7pt; color: var(--ink2);
+    border-bottom: none; padding-top: 1pt; padding-bottom: 1pt;
+  }
+
+  /* ---- การแบ่งหน้า ---- */
+  .page-break { break-before: page; }
+  section { break-inside: auto; }
+  /* บทเนื้อหาไหลต่อกันเพื่อไม่ให้เหลือหน้าแทบว่างท้ายบท
+     แต่หัวบทต้องไม่ค้างอยู่ท้ายหน้าโดยไม่มีเนื้อหาตาม */
+  .chapter { break-before: auto; padding-top: 9pt; }
+  .chapter + .chapter { border-top: 0.5pt solid var(--line2); }
+  h2 { break-after: avoid; }
+  h3 + p, h3 + table, h3 + ul, h3 + ol, h3 + dl { break-before: avoid; }
+  .lead { break-inside: avoid; }
+  .end { }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover__kicker">คู่มือการใช้งาน · User Manual</div>
+  <h1 class="cover__title">ระบบแผนที่เว็บแสดงผลการติดตามและพยากรณ์<br>ความผิดปกติของระดับน้ำทะเล</h1>
+  <div class="cover__sub">กรณีศึกษา 4 สถานี บริเวณอ่าวไทยตอนบน</div>
+  <div class="cover__en">Sea Level Anomaly Monitoring &amp; Forecasting Web Map Application<br>
+    Upper Gulf of Thailand — SARIMA / Random Forest / LSTM</div>
+  <div class="cover__box">
+    <dl class="kv"><div><dt>ข้อมูล SLA</dt><dd>Copernicus Marine Service (CMEMS) · รายเดือน 1993-01 – 2024-12</dd></div><div><dt>ตัวแปรอุตุนิยมวิทยา</dt><dd>ERA5 reanalysis (Copernicus CDS) · SST, SLP, u10, v10</dd></div><div><dt>ภาพประกอบเชิงพื้นที่</dt><dd>Google Earth Engine (Sentinel-2 / Landsat)</dd></div><div><dt>พื้นที่ศึกษา</dt><dd>4 สถานี · กล่องเฉลี่ย ±0.25° รอบพิกัดสถานี</dd></div><div><dt>ช่วงข้อมูล</dt><dd>1993-01 – 2024-12 (384 เดือนต่อสถานี)</dd></div><div><dt>แบบจำลอง</dt><dd>SARIMA · Random Forest · LSTM</dd></div><div><dt>ตัวชี้วัดหลัก</dt><dd>RMSE (m)</dd></div></dl>
+  </div>
+  <div class="cover__foot">
+    เอกสารนี้สร้างอัตโนมัติจากไฟล์ข้อมูลของระบบเมื่อ
+    09/09/2026 11:39 ·
+    ตัวเลขในภาคผนวกอ่านจาก <code>webapp/data/</code> โดยตรง
+  </div>
+</section>
+<section class="page-break">
+  <h2 class="h2--plain">สารบัญ</h2>
+  <ul class="toc"><li><span class="toc__n">1</span><span class="toc__t">ระบบนี้คืออะไร</span></li><li class="toc__sub">1.1 ขอบเขตของระบบ</li><li class="toc__sub">1.2 แหล่งข้อมูล</li><li class="toc__sub">1.3 พื้นที่ศึกษา</li><li class="toc__sub">1.4 แบบจำลองและการแบ่งข้อมูล</li><li><span class="toc__n">2</span><span class="toc__t">การเข้าใช้งาน</span></li><li class="toc__sub">2.1 เปิดจากอินเทอร์เน็ต</li><li class="toc__sub">2.2 เปิดในเครื่อง</li><li class="toc__sub">2.3 เบราว์เซอร์ที่รองรับ</li><li><span class="toc__n">3</span><span class="toc__t">ส่วนประกอบที่พบทุกหน้า</span></li><li class="toc__sub">3.1 แถบบนและเมนู</li><li class="toc__sub">3.2 โหมดสว่าง/มืด</li><li class="toc__sub">3.3 ตัวเลือกสถานี</li><li class="toc__sub">3.4 สีและเส้นประจำชุดข้อมูล</li><li class="toc__sub">3.5 การใช้งานกราฟ</li><li><span class="toc__n">4</span><span class="toc__t">หน้าที่ 1 — ภาพรวม (Overview)</span></li><li><span class="toc__n">5</span><span class="toc__t">หน้าที่ 2 — การวิเคราะห์ SLA</span></li><li><span class="toc__n">6</span><span class="toc__t">หน้าที่ 3 — ตัวแปรอุตุนิยมวิทยา</span></li><li><span class="toc__n">7</span><span class="toc__t">หน้าที่ 4 — ผลแบบจำลองและการพยากรณ์</span></li><li><span class="toc__n">8</span><span class="toc__t">หน้าที่ 5 — รายงานอัตโนมัติ</span></li><li><span class="toc__n">9</span><span class="toc__t">การอ่านและตีความค่า</span></li><li class="toc__sub">9.1 ตัวชี้วัด</li><li class="toc__sub">9.2 แนวโน้ม</li><li class="toc__sub">9.3 ทำไม Forecast เป็น N/A</li><li class="toc__sub">9.4 ความสำคัญของตัวแปร</li><li><span class="toc__n">10</span><span class="toc__t">ไฟล์ข้อมูลของระบบ</span></li><li><span class="toc__n">11</span><span class="toc__t">การอัปเดตข้อมูลจากผลการศึกษา</span></li><li><span class="toc__n">12</span><span class="toc__t">การนำขึ้นเว็บ</span></li><li><span class="toc__n">13</span><span class="toc__t">ปัญหาที่พบบ่อยและวิธีแก้</span></li><li><span class="toc__n">14</span><span class="toc__t">ภาคผนวก</span></li><li class="toc__sub">ก. สถิติ SLA รายสถานี</li><li class="toc__sub">ข. ตัวชี้วัดทุกแบบจำลอง</li><li class="toc__sub">ค. ความสำคัญของตัวแปร</li><li class="toc__sub">ง. ค่าเฉลี่ยรายเดือน</li><li class="toc__sub">จ. พารามิเตอร์แบบจำลอง</li><li class="toc__sub">ฉ. คำศัพท์</li></ul>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">1</span>ระบบนี้คืออะไร</h2>
+
+  <h3>1.1 ขอบเขตของระบบ</h3>
+  <p>ระบบนี้เป็น <b>ระบบแสดงผลการศึกษา (Research Result Visualization)</b>
+  ทำหน้าที่นำผลการวิเคราะห์และผลการพยากรณ์ที่คำนวณเสร็จแล้วมาแสดงบนแผนที่และกราฟ
+  เพื่อให้อ่านและเปรียบเทียบได้สะดวก</p>
+
+  <div class="two">
+    <div class="do">
+      <div class="do__h">ระบบนี้ทำ</div>
+      <ul>
+        <li>แสดงอนุกรมเวลา SLA และตัวแปรอุตุนิยมวิทยาของแต่ละสถานี</li>
+        <li>แสดงค่าจริงเทียบค่าพยากรณ์ของทั้งสามแบบจำลอง</li>
+        <li>เปรียบเทียบประสิทธิภาพและชี้แบบจำลองที่ดีที่สุดของแต่ละสถานี</li>
+        <li>แสดงความสำคัญของตัวแปรใน Random Forest</li>
+        <li>เรียบเรียงรายงานสรุปให้อัตโนมัติจากไฟล์ข้อมูล</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <div class="dont__h">ระบบนี้ไม่ทำ</div>
+      <ul>
+        <li>ไม่ใช่ระบบ real-time ไม่ดึงข้อมูลสด ไม่มีการเตือนภัย</li>
+        <li>ไม่ฝึกแบบจำลองใหม่และไม่คำนวณค่าพยากรณ์ใหม่</li>
+        <li>ไม่แก้ค่าตัวชี้วัดหรือผลทางวิทยาศาสตร์ใด ๆ</li>
+        <li>ไม่เดาค่าที่ไม่มีในไฟล์ — จะแสดง <code>N/A</code> ตามความเป็นจริง</li>
+        <li>ไม่มีฐานข้อมูลและไม่มี backend</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note "><span class="note__t">สิ่งที่ต้องเข้าใจก่อนใช้</span><span class="note__b">ตัวเลขทุกค่าบนหน้าเว็บถูกคำนวณไว้ล่วงหน้าในโน้ตบุ๊กวิจัย <code>SLA_predict_SARIMA_RF_LSTM.ipynb</code> แล้วแปลงเป็นไฟล์ CSV/GeoJSON/JSON หน้าเว็บเพียง <i>อ่านมาแสดง</i> การเปิดหน้าเว็บซ้ำหรือเปลี่ยนตัวเลือกใด ๆ จึงไม่ทำให้ผลเปลี่ยน</span></div>
+
+  <h3>1.2 แหล่งข้อมูล</h3>
+  <p>ระบบใช้ข้อมูล 3 กลุ่ม โดยสองกลุ่มแรกเข้าสู่แบบจำลอง กลุ่มที่สามเป็นภาพประกอบเชิงพื้นที่เท่านั้น</p>
+  <table class="t "><caption>ตารางที่ 1.1 แหล่งข้อมูลของระบบ</caption><thead><tr><th class='text'>แหล่งข้อมูล</th><th>บทบาทในการศึกษา</th><th>ตัวแปร</th><th>เข้าแบบจำลอง</th></tr></thead><tbody><tr><td class='text'><b>Copernicus Marine Service (CMEMS)</b></td><td>Sea Level Anomaly (SLA) รายเดือน 1993–2024</td><td><code>sla</code></td><td>เข้า</td></tr><tr><td class='text'><b>ERA5 reanalysis (Copernicus CDS)</b></td><td>ตัวแปรอุตุนิยมวิทยาที่ป้อนให้ RF และ LSTM</td><td><code>sst</code>, <code>msl</code>, <code>u10</code>, <code>v10</code></td><td>เข้า</td></tr><tr><td class='text'><b>Google Earth Engine (Sentinel-2 / Landsat)</b></td><td>ภาพดาวเทียมประกอบพื้นที่ศึกษา (ไม่เข้าแบบจำลอง)</td><td>—</td><td>ไม่เข้า</td></tr></tbody></table>
+  <p>ข้อมูล SLA และ ERA5 ถูกเฉลี่ยเชิงพื้นที่แบบ <b>box mean ±0.25° รอบพิกัดสถานี</b>
+  ก่อนนำไปใช้ ทำให้แต่ละสถานีได้อนุกรมเวลาเดือนละหนึ่งค่า</p>
+
+  <h3>1.3 พื้นที่ศึกษา</h3>
+  <table class="t "><caption>ตารางที่ 1.2 พิกัดสถานีและขอบเขตกล่องเฉลี่ยเชิงพื้นที่</caption><thead><tr><th>#</th><th>สถานี</th><th>ชื่อไทย</th><th>ละติจูด</th><th>ลองจิจูด</th><th>กล่องเฉลี่ย (องศา)</th></tr></thead><tbody><tr><td>1</td><td><b>Wat Khun Samut Chin</b></td><td>วัดขุนสมุทรจีน</td><td>13.5061° N</td><td>100.5313° E</td><td>13.256–13.756 N<br>100.281–100.781 E</td></tr><tr><td>2</td><td><b>Laem Chabang Port</b></td><td>ท่าเรือแหลมฉบัง</td><td>13.0476° N</td><td>100.8688° E</td><td>12.798–13.298 N<br>100.619–101.119 E</td></tr><tr><td>3</td><td><b>Upper Gulf Offshore</b></td><td>พื้นที่ตอนล่างของอ่าวไทยตอนบน</td><td>12.6250° N</td><td>100.3750° E</td><td>12.375–12.875 N<br>100.125–100.625 E</td></tr><tr><td>4</td><td><b>Phetchaburi Bangkawe</b></td><td>ชายฝั่งทะเลตำบลบางแก้ว</td><td>13.0997° N</td><td>100.0655° E</td><td>12.850–13.350 N<br>99.815–100.315 E</td></tr></tbody></table>
+
+  <h3>1.4 แบบจำลองและการแบ่งข้อมูล</h3>
+  <p>ทั้งสามแบบจำลองถูกเปรียบเทียบบนเงื่อนไขเดียวกัน คือใช้ข้อมูลชุดเดียวกัน
+  ช่วงแบ่งเดียวกัน เป้าหมายเดียวกัน และพยากรณ์ล่วงหน้าเท่ากัน</p>
+  <dl class="kv"><div><dt>การแบ่งข้อมูล</dt><dd>Train 1993-01-01 – 2016-12-31 · Validation 2017-01-01 – 2019-12-31 · Test 2020-01-01 – 2024-12-31</dd></div><div><dt>เป้าหมาย (target)</dt><dd><code>SLA_target = SLA(t+1)</code></dd></div><div><dt>พยากรณ์ล่วงหน้า</dt><dd>1 เดือน (1-step-ahead)</dd></div><div><dt>LSTM lookback</dt><dd>12 เดือน</dd></div><div><dt>คาบฤดูกาล</dt><dd>12 เดือน</dd></div><div><dt>ตัวชี้วัดหลัก</dt><dd>RMSE (m)</dd></div><div><dt>ฟีเจอร์ Random Forest (11 ตัว)</dt><dd><code>SLA_hist</code> <code>SST</code> <code>SLP</code> <code>u10</code> <code>v10</code> <code>SLA_lag1</code> <code>SLA_lag3</code> <code>SLA_lag6</code> <code>SLA_lag12</code> <code>month_sin</code> <code>month_cos</code></dd></div><div><dt>ฟีเจอร์ LSTM (7 ตัว)</dt><dd><code>SLA_hist</code> <code>SST</code> <code>SLP</code> <code>u10</code> <code>v10</code> <code>month_sin</code> <code>month_cos</code></dd></div></dl>
+  <div class="note "><span class="note__t">ชุด Test ถูกแตะครั้งเดียว</span><span class="note__b">การเลือกพารามิเตอร์ทั้งหมดใช้ชุด Validation เท่านั้น ชุด Test (2020-01-01 – 2024-12-31) ถูกใช้วัดผลครั้งเดียวตอนท้าย ตัวเลขที่เห็นในหน้าเว็บจึงเป็นผลบนข้อมูลที่แบบจำลองไม่เคยเห็น</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">2</span>การเข้าใช้งาน</h2>
+
+  <h3>2.1 เปิดจากอินเทอร์เน็ต</h3>
+  <p>ระบบถูกเผยแพร่ไว้สองที่ เนื้อหาเหมือนกัน เลือกเปิดที่ใดก็ได้</p>
+  <table class="t "><caption>ตารางที่ 2.1 ที่อยู่ของระบบ</caption><thead><tr><th class='text'>ที่อยู่เว็บ</th><th>มาจาก repo</th><th>ลักษณะ</th></tr></thead><tbody><tr><td class='text'><code>https://jariya-aum.github.io/Demo_SLA_Web_app/</code></td><td><code>Demo_SLA_Web_app</code></td><td>repo เฉพาะเว็บ ไฟล์อยู่ที่ root</td></tr><tr><td class='text'><code>https://jariya-aum.github.io/Demo_SLA/</code></td><td><code>Demo_SLA</code></td><td>repo งานวิจัย เว็บอยู่ใต้ <code>webapp/</code></td></tr></tbody></table>
+  <p>ไม่ต้องเข้าสู่ระบบ ไม่ต้องใช้รหัสผ่าน และไม่มีการเก็บข้อมูลผู้ใช้
+  สิ่งเดียวที่บันทึกไว้ในเครื่องผู้ใช้คือค่าเลือกโหมดสว่าง/มืด</p>
+
+  <h3>2.2 เปิดในเครื่อง</h3>
+  <p>หน้าเว็บอ่านไฟล์ในโฟลเดอร์ <code>data/</code> ด้วยคำสั่ง <code>fetch()</code>
+  ซึ่งเบราว์เซอร์จะปฏิเสธถ้าเปิดไฟล์ตรง ๆ ด้วย <code>file://</code>
+  ต้องเปิดผ่านเว็บเซิร์ฟเวอร์เท่านั้น</p>
+  <ol class="steps"><li>เปิด Command Prompt หรือ PowerShell</li><li>เข้าไปที่โฟลเดอร์ของเว็บ — ถ้าใช้ repo งานวิจัยให้พิมพ์ <code>cd webapp</code> ถ้าใช้ repo เฉพาะเว็บอยู่ที่ root แล้วไม่ต้อง cd</li><li>สั่ง <code>python -m http.server 8000</code></li><li>เปิดเบราว์เซอร์ไปที่ <code>http://localhost:8000</code></li><li>กด <kbd>Ctrl</kbd>+<kbd>C</kbd> ที่หน้าต่างคำสั่งเมื่อต้องการปิดเซิร์ฟเวอร์</li></ol>
+  <div class="note warn"><span class="note__t">อาการเมื่อเปิดผิดวิธี</span><span class="note__b">ถ้าเปิดด้วย <code>file://</code> จะเห็นข้อความ “โหลดข้อมูลไม่สำเร็จ” พร้อมคำแนะนำบนหน้าเว็บ ไม่ใช่หน้าขาว</span></div>
+
+  <h3>2.3 เบราว์เซอร์ที่รองรับ</h3>
+  <p>ใช้ได้กับเบราว์เซอร์รุ่นใหม่ทั่วไป (Chrome, Edge, Firefox, Safari)
+  ออกแบบสำหรับจอคอมพิวเตอร์เป็นหลัก และปรับผังลงมารองรับแท็บเล็ตและมือถือ
+  ต้องต่ออินเทอร์เน็ตเพราะไลบรารีแผนที่และกราฟโหลดจาก CDN
+  และแผนที่ฐานเป็นบริการแผนที่ออนไลน์</p>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">3</span>ส่วนประกอบที่พบทุกหน้า</h2>
+
+  <h3>3.1 แถบบนและเมนู</h3>
+  <p>แถบบนสุดค้างอยู่ตลอดการใช้งาน ประกอบด้วยชื่อระบบ เมนูหลัก 5 รายการ
+  และปุ่มสลับโหมดสี เมนูที่กำลังเปิดอยู่จะถูกเน้นให้เห็นชัด</p>
+  <table class="t "><caption>ตารางที่ 3.1 เมนูหลักของระบบ</caption><thead><tr><th class='text'>เมนู</th><th>ใช้ดูอะไร</th><th>หัวข้อในคู่มือ</th></tr></thead><tbody><tr><td class='text'>ภาพรวม · Overview</td><td>แผนที่พื้นที่ศึกษาและสรุปรายสถานี</td><td>หัวข้อ 4</td></tr><tr><td class='text'>SLA Analysis</td><td>อนุกรมเวลา SLA และสถิติเชิงพรรณนา</td><td>หัวข้อ 5</td></tr><tr><td class='text'>Meteorological Variables</td><td>อนุกรมเวลาตัวแปร ERA5</td><td>หัวข้อ 6</td></tr><tr><td class='text'>Model Results &amp; Forecast</td><td>ผลพยากรณ์และการเปรียบเทียบแบบจำลอง</td><td>หัวข้อ 7</td></tr><tr><td class='text'>รายงานอัตโนมัติ · Report</td><td>รายงานสรุปทั้งฉบับพร้อมพิมพ์</td><td>หัวข้อ 8</td></tr></tbody></table>
+  <p>ที่อยู่เว็บเปลี่ยนตามเมนูที่เปิด เช่น <code>…/#/sla</code> จึงคัดลอกลิงก์
+  ส่งให้ผู้อื่นเปิดตรงหน้านั้นได้ และปุ่มย้อนกลับของเบราว์เซอร์ใช้งานได้ตามปกติ</p>
+
+  <h3>3.2 โหมดสว่าง/มืด</h3>
+  <p>ปุ่มวงกลมครึ่งดำครึ่งขาวที่มุมขวาของแถบบนใช้สลับโหมดสี ระบบจำค่าที่เลือกไว้
+  ในเครื่องผู้ใช้ ครั้งต่อไปจะเปิดด้วยโหมดเดิม ถ้าไม่เคยเลือกจะใช้ตามการตั้งค่าของ
+  ระบบปฏิบัติการ สีของกราฟถูกปรับให้อ่านได้ทั้งสองโหมด</p>
+
+  <h3>3.3 ตัวเลือกสถานี</h3>
+  <p>สถานีที่เลือกไว้ <b>ติดตามไปทุกหน้า</b> เลือกที่หน้าใดก็ได้ผลเหมือนกัน
+  เปลี่ยนได้ 3 ทาง</p>
+  <ol class="steps"><li>คลิกหมุดสถานีบนแผนที่ในหน้าภาพรวม</li><li>คลิกรายการสถานีในกล่อง “สถานีศึกษา” ข้างแผนที่</li><li>เลือกจากช่องเลือกสถานีที่อยู่บนแถบตัวกรองของแต่ละหน้า</li></ol>
+  <p>หน้ารายงานอัตโนมัติสรุปทั้ง 4 สถานีพร้อมกัน จึงไม่มีช่องเลือกสถานี</p>
+
+  <h3>3.4 สีและเส้นประจำชุดข้อมูล</h3>
+  <p>สีและรูปแบบเส้นถูกกำหนดให้เหมือนกันทั้งเว็บและตรงกับกราฟในเล่มรายงาน
+  แต่ละแบบจำลองมีทั้งสีและลายเส้นกำกับซ้ำ จึงแยกออกได้แม้พิมพ์ขาวดำ
+  หรือผู้อ่านแยกสีได้ยาก</p>
+  <table class="t "><caption>ตารางที่ 3.2 สีและลายเส้นประจำชุดข้อมูล</caption><thead><tr><th class='text'>ชุดข้อมูล</th><th>สี</th><th>ลายเส้น</th><th>ใช้ที่ไหน</th></tr></thead><tbody><tr><td class='text'>ค่าจริง (Observed)</td><td><span class="sw sw--ink"></span> ดำ (ขาวในโหมดมืด)</td><td>ทึบ หนา</td><td>ทุกกราฟที่มีค่าจริง</td></tr><tr><td class='text'><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td><span class="sw" style="background:#008300"></span> #008300</td><td>เส้นประ</td><td>กราฟผลพยากรณ์และตาราง</td></tr><tr><td class='text'><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td><span class="sw" style="background:#9b4f96"></span> #9b4f96</td><td>ประ-จุด</td><td>กราฟผลพยากรณ์และตาราง</td></tr><tr><td class='text'><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td><span class="sw" style="background:#1baf7a"></span> #1baf7a</td><td>จุด</td><td>กราฟผลพยากรณ์และตาราง</td></tr><tr><td class='text'>SLA และตัวแปร ERA5</td><td><span class="sw" style="background:#2a78d6"></span> #2a78d6</td><td>ทึบ</td><td>กราฟอนุกรมเวลาและกราฟแท่ง</td></tr></tbody></table>
+
+  <h3>3.5 การใช้งานกราฟ</h3>
+  <p>กราฟทุกรูปเป็นกราฟแบบโต้ตอบได้ เมื่อนำเมาส์ไปวางบนกราฟจะมีแถบเครื่องมือ
+  ปรากฏที่มุมขวาบน</p>
+  <table class="t "><caption>ตารางที่ 3.3 การโต้ตอบกับกราฟ</caption><thead><tr><th class='text'>การกระทำ</th><th>ผลที่ได้</th></tr></thead><tbody><tr><td class='text'>ชี้ที่จุดหรือเส้น</td><td>แสดงป้ายบอกค่าและวันที่ของจุดนั้น</td></tr><tr><td class='text'>ลากคลุมพื้นที่</td><td>ขยายเข้าไปดูช่วงเวลาที่เลือก</td></tr><tr><td class='text'>ดับเบิลคลิก</td><td>คืนมุมมองกลับเป็นช่วงเต็ม</td></tr><tr><td class='text'>คลิกชื่อชุดข้อมูลในคำอธิบาย</td><td>ซ่อนหรือแสดงเส้นนั้น</td></tr><tr><td class='text'>ปุ่มรูปกล้องบนแถบเครื่องมือ</td><td>บันทึกกราฟเป็นไฟล์ภาพ PNG</td></tr></tbody></table>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">4</span>หน้าที่ 1 — ภาพรวม (Overview)</h2>
+  <p class="lead">ใช้ดูว่าพื้นที่ศึกษาอยู่ที่ใด แต่ละสถานีมีสถานะล่าสุดอย่างไร
+  และแบบจำลองใดทำงานได้ดีที่สุดในแต่ละสถานี</p>
+
+  <h3>4.1 แผนที่พื้นที่ศึกษา</h3>
+  <p>แผนที่แสดงหมุดสถานีทั้ง 4 จุด พร้อมกรอบสี่เหลี่ยม
+  <b>Study Box</b> ซึ่งคือกล่อง ±0.25° รอบพิกัดสถานีที่ใช้เฉลี่ยค่า SLA
+  และตัวแปร ERA5 กรอบนี้ไม่ใช่ขอบเขตการปกครองหรือขอบเขตทางกายภาพ
+  แต่เป็นขอบเขตการคำนวณ</p>
+  <table class="t "><caption>ตารางที่ 4.1 องค์ประกอบบนแผนที่</caption><thead><tr><th class='text'>สิ่งที่เห็นบนแผนที่</th><th>ความหมาย</th></tr></thead><tbody><tr><td class='text'>หมุดหมายเลข 1–4</td><td>ตำแหน่งสถานีศึกษา หมายเลขเรียงตามลำดับในงานวิจัย</td></tr><tr><td class='text'>หมุดที่ถูกเน้น</td><td>สถานีที่กำลังเลือกอยู่</td></tr><tr><td class='text'>กรอบสี่เหลี่ยม</td><td>Study Box ±0.25° — พื้นที่ที่ใช้เฉลี่ยข้อมูล</td></tr><tr><td class='text'>แผนที่ฐาน</td><td>เลือกได้จากปุ่มชั้นข้อมูลมุมขวาบนของแผนที่</td></tr></tbody></table>
+  <p>ปุ่มชั้นข้อมูลที่มุมขวาบนของแผนที่ให้เลือกแผนที่ฐานได้หลายแบบ ทั้งแผนที่ถนน
+  ภาพถ่ายดาวเทียม และแผนที่ภูมิประเทศ รวมทั้งเปิด/ปิดชั้น Study Box ได้</p>
+  <div class="note "><span class="note__t">ภาพจาก Google Earth Engine</span><span class="note__b">หน้าเว็บไม่เรียก Google Earth Engine โดยตรง เพราะบริการนั้นต้องยืนยันตัวตน ซึ่งจะทำให้ต้องฝังความลับไว้ในโค้ดฝั่งหน้าเว็บ ถ้าต้องการภาพ Sentinel-2 หรือ Landsat ให้ export ไว้ล่วงหน้าแล้ววางในโฟลเดอร์ <code>assets/gee/</code> พร้อมไฟล์ <code>manifest.json</code> ระบบจะเพิ่มชั้นข้อมูลให้เองในปุ่มชั้นข้อมูล ถ้าไม่มีไฟล์นี้ก็ทำงานตามปกติ</span></div>
+
+  <h3>4.2 รายละเอียดสถานีที่เลือก</h3>
+  <p>เมื่อคลิกหมุดหรือรายการสถานี แผงด้านขวาจะแสดงการ์ดสรุป 3 ใบ</p>
+  <table class="t "><caption>ตารางที่ 4.2 การ์ดสรุปรายสถานี</caption><thead><tr><th class='text'>การ์ด</th><th>ความหมาย</th><th>ที่มาของค่า</th></tr></thead><tbody><tr><td class='text'>SLA ล่าสุดในชุดข้อมูล</td><td>ค่า SLA เดือนสุดท้ายที่มีข้อมูล (เดือน 2024-12) ไม่ใช่ค่าปัจจุบันหรือค่าวันนี้</td><td><code>sla_historical.csv</code></td></tr><tr><td class='text'>แนวโน้ม SLA</td><td>ความชันของเส้นถดถอยเชิงเส้นตลอดช่วงข้อมูล หน่วยมิลลิเมตรต่อปี</td><td>คำนวณจากอนุกรมที่แสดงบนกราฟ</td></tr><tr><td class='text'>แบบจำลองที่ดีที่สุด</td><td>แบบจำลองที่ให้ RMSE ต่ำสุดบนชุด Test ของสถานีนั้น</td><td><code>model_metrics.csv</code></td></tr></tbody></table>
+
+  <h3>4.3 ตารางสรุปรายสถานีและกราฟแท่งสองรูป</h3>
+  <p>ด้านล่างของหน้ามีตารางรวมทุกสถานีไว้ในที่เดียว ต่อด้วยกราฟแท่งสองรูป
+  รูปซ้ายเทียบ RMSE ของแบบจำลองที่ดีที่สุดในแต่ละสถานี (ยิ่งแท่งสั้นยิ่งแม่น)
+  รูปขวาเทียบแนวโน้ม SLA ของแต่ละสถานีเป็นมิลลิเมตรต่อปี</p>
+  <div class="note "><span class="note__t">ค่าจริงของระบบขณะสร้างคู่มือ</span><span class="note__b">แบบจำลองที่ดีที่สุดของทั้ง 4 สถานีคือ SARIMA โดยมี RMSE ระหว่าง 0.0403 ถึง 0.0485 เมตร และแนวโน้ม SLA เป็นบวกทุกสถานี ดูค่าทั้งหมดในภาคผนวก ก และ ข</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">5</span>หน้าที่ 2 — การวิเคราะห์ SLA</h2>
+  <p class="lead">ใช้ดูพฤติกรรมของระดับน้ำทะเลในอดีตของสถานีที่เลือก
+  ทั้งค่าสถิติภาพรวม แนวโน้มระยะยาว และรูปแบบตามฤดูกาล</p>
+
+  <h3>5.1 แถบตัวกรอง</h3>
+  <p>มีสองส่วน คือช่องเลือกสถานี และปุ่มเปิด/ปิดแถบสีบอกช่วง
+  Train / Validation / Test บนกราฟ การปิดแถบสีช่วยให้ดูเส้นข้อมูลได้ชัดขึ้น
+  การเปิดช่วยให้เห็นว่าช่วงใดถูกใช้ฝึกและช่วงใดถูกใช้ทดสอบ</p>
+
+  <h3>5.2 การ์ดค่าสถิติ</h3>
+  <table class="t "><caption>ตารางที่ 5.1 ค่าสถิติที่แสดงในหน้านี้</caption><thead><tr><th class='text'>ค่า</th><th>ความหมาย</th></tr></thead><tbody><tr><td class='text'>Mean</td><td>ค่าเฉลี่ยของ SLA ตลอดช่วงข้อมูล</td></tr><tr><td class='text'>Minimum</td><td>ค่าต่ำสุดที่พบ พร้อมเดือนที่เกิด</td></tr><tr><td class='text'>Maximum</td><td>ค่าสูงสุดที่พบ พร้อมเดือนที่เกิด</td></tr><tr><td class='text'>Standard Deviation</td><td>ส่วนเบี่ยงเบนมาตรฐาน บอกความผันผวนของอนุกรม</td></tr><tr><td class='text'>Linear Trend</td><td>อัตราการเปลี่ยนแปลงระยะยาว หน่วยมิลลิเมตรต่อปี</td></tr></tbody></table>
+  <p>ทุกค่าคำนวณจากอนุกรมเต็มช่วง 1993-01 – 2024-12 (384 เดือน) ของสถานีที่เลือก</p>
+
+  <h3>5.3 กราฟอนุกรมเวลา SLA</h3>
+  <p>เส้นสีน้ำเงินคือค่า SLA รายเดือน เส้นตรงทับอยู่คือเส้นแนวโน้มเชิงเส้น
+  เส้นประแนวนอนที่ระดับศูนย์เป็นเส้นอ้างอิง ไม่ใช่ข้อมูล
+  ค่าเป็นบวกหมายถึงระดับน้ำสูงกว่าค่าอ้างอิง ค่าเป็นลบหมายถึงต่ำกว่า</p>
+  <p>ใต้กราฟมีหัวข้อพับเก็บชื่อ “ดูข้อมูลเป็นตาราง” กดเพื่อดูค่ารายเดือนทั้งหมด
+  ของสถานีที่เลือกเป็นตัวเลข</p>
+
+  <h3>5.4 ค่าเฉลี่ยรายเดือนตามปฏิทิน</h3>
+  <p>กราฟสุดท้ายของหน้าคือรูปแบบฤดูกาล คำนวณโดยเฉลี่ยค่าของเดือนเดียวกัน
+  ข้ามทุกปีในช่วงข้อมูล แถบรอบเส้นคือช่วง ±1 ส่วนเบี่ยงเบนมาตรฐาน
+  กราฟนี้บอกว่าเดือนใดระดับน้ำมักสูงและเดือนใดมักต่ำ</p>
+  <div class="note "><span class="note__t">ค่าจริงของระบบขณะสร้างคู่มือ</span><span class="note__b">ทุกสถานีมีค่าเฉลี่ยรายเดือนสูงสุดในเดือนธันวาคม ส่วนเดือนต่ำสุดเป็นมิถุนายน ยกเว้นสถานี Wat Khun Samut Chin ที่ต่ำสุดในเดือนสิงหาคม ดูค่าทั้งหมดในภาคผนวก ง</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">6</span>หน้าที่ 3 — ตัวแปรอุตุนิยมวิทยา</h2>
+  <p class="lead">ใช้ดูตัวแปรจาก ERA5 ที่ถูกป้อนเข้าแบบจำลอง Random Forest และ LSTM
+  เพื่อเข้าใจว่าแบบจำลองเห็นข้อมูลอะไรบ้าง</p>
+
+  <h3>6.1 ตัวแปรทั้งสี่</h3>
+  <table class="t "><caption>ตารางที่ 6.1 ตัวแปร ERA5 ที่ใช้ในการศึกษา</caption><thead><tr><th class='text'>รหัส</th><th>ชื่อเต็ม</th><th>หน่วย</th><th>ความหมายโดยย่อ</th></tr></thead><tbody><tr><td class='text'><b>SST</b></td><td>Sea Surface Temperature</td><td>°C</td><td>อุณหภูมิผิวน้ำทะเล น้ำอุ่นขยายตัวทำให้ระดับน้ำสูงขึ้น</td></tr><tr><td class='text'><b>SLP</b></td><td>Mean Sea Level Pressure</td><td>hPa</td><td>ความกดอากาศที่ระดับน้ำทะเล ความกดต่ำมักมาพร้อมระดับน้ำที่สูงขึ้น</td></tr><tr><td class='text'><b>u10</b></td><td>10-m U-component of wind</td><td>m/s</td><td>ลมที่ความสูง 10 เมตร ในแนวตะวันออก–ตะวันตก (บวก = พัดไปทางตะวันออก)</td></tr><tr><td class='text'><b>v10</b></td><td>10-m V-component of wind</td><td>m/s</td><td>ลมที่ความสูง 10 เมตร ในแนวเหนือ–ใต้ (บวก = พัดไปทางเหนือ)</td></tr></tbody></table>
+
+  <h3>6.2 การเลือกดู</h3>
+  <p>แถบตัวกรองมีช่องเลือกสถานี และปุ่มเลือกตัวแปรที่ต้องการแสดง
+  กดปุ่มตัวแปรเพื่อเปิดหรือปิดแผงกราฟของตัวแปรนั้น เลือกได้หลายตัวพร้อมกัน</p>
+  <p>ตัวแปรแต่ละตัวมีแผงกราฟของตัวเอง <b>ไม่นำมาไว้บนแกนเดียวกัน</b>
+  เพราะหน่วยต่างกันมาก การวางองศาเซลเซียสกับเฮกโตปาสคาลบนแกนเดียวกัน
+  จะทำให้อ่านค่าผิด</p>
+
+  <h3>6.3 การแปลงหน่วย</h3>
+  <p>ไฟล์ต้นทางของ ERA5 เก็บอุณหภูมิเป็นเคลวินและความกดอากาศเป็นปาสคาล
+  ระบบแปลงเป็นองศาเซลเซียสและเฮกโตปาสคาลตามลำดับ โดย
+  <b>อ่านหน่วยจาก metadata ของไฟล์</b> ไม่ใช้ค่าคงที่แบบเดา
+  ส่วน u10 และ v10 คงหน่วยเดิมเป็นเมตรต่อวินาที</p>
+  <div class="note "><span class="note__t">ทำไมไม่ทำเป็นชั้นข้อมูลบนแผนที่</span><span class="note__b">ตัวแปร ERA5 ถูกเฉลี่ยเป็นค่าเดียวต่อสถานีต่อเดือนแล้วก่อนเข้าแบบจำลอง การแสดงเป็นอนุกรมเวลาจึงตรงกับสิ่งที่แบบจำลองใช้จริง ต่างจากการแสดงเป็นภาพ raster ซึ่งเป็นข้อมูลก่อนการเฉลี่ย</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">7</span>หน้าที่ 4 — ผลแบบจำลองและการพยากรณ์</h2>
+  <p class="lead">หน้าหลักของการเปรียบเทียบแบบจำลอง แสดงว่าแต่ละแบบจำลอง
+  พยากรณ์ได้ใกล้ค่าจริงเพียงใดบนชุดทดสอบ และตัวแปรใดมีบทบาทมากใน Random Forest</p>
+
+  <h3>7.1 แถบตัวกรอง</h3>
+  <p>เลือกสถานีได้จากช่องเลือก และเลือกได้ว่าจะให้กราฟแสดงแบบจำลองใดบ้าง
+  ด้วยปุ่มชื่อแบบจำลอง การปิดบางแบบจำลองช่วยให้เทียบสองตัวได้ชัดขึ้น
+  ทั้งนี้ <b>ตารางตัวชี้วัดแสดงครบทุกแบบจำลองเสมอ</b> ไม่ขึ้นกับปุ่มนี้</p>
+
+  <h3>7.2 ตารางเปรียบเทียบประสิทธิภาพ</h3>
+  <p>ตารางแสดงค่า MSE, MAE, RMSE และ R² ของทั้ง 3 แบบจำลอง
+  ทุกสถานี แถวที่ถูกไฮไลต์คือแบบจำลองที่ดีที่สุดของสถานีนั้น
+  ซึ่งตัดสินด้วย <b>RMSE ต่ำสุด</b> ตามตัวชี้วัดหลักของงานวิจัย</p>
+
+  <h3>7.3 กราฟค่าจริงเทียบค่าพยากรณ์</h3>
+  <p>เส้นทึบหนาสีดำคือค่าจริง เส้นลายอื่นคือค่าพยากรณ์ของแต่ละแบบจำลอง
+  ครอบคลุมชุด Test เดือน 2020-01 ถึง 2024-12
+  รวม 60 เดือน
+  เส้นที่แนบไปกับเส้นค่าจริงมากที่สุดคือแบบจำลองที่แม่นที่สุดในสายตา
+  ส่วนการตัดสินเชิงตัวเลขให้ดูที่ตาราง</p>
+
+  <h3>7.4 กราฟกระจายและกราฟค่าคลาดเคลื่อน</h3>
+  <table class="t "><caption>ตารางที่ 7.1 การอ่านกราฟวินิจฉัย</caption><thead><tr><th class='text'>กราฟ</th><th>วิธีอ่าน</th></tr></thead><tbody><tr><td class='text'>Predicted vs Actual</td><td>จุดยิ่งเกาะเส้นทแยง 1:1 ยิ่งแม่น จุดที่อยู่เหนือเส้นคือพยากรณ์สูงกว่าจริง จุดที่อยู่ใต้เส้นคือพยากรณ์ต่ำกว่าจริง</td></tr><tr><td class='text'>ค่าคลาดเคลื่อนรายเดือน (Residual)</td><td>คือค่าจริงลบค่าพยากรณ์ ยิ่งใกล้เส้นศูนย์ยิ่งดี ถ้าค่าคลาดเคลื่อนเบนไปข้างเดียวเป็นช่วงยาว แสดงว่าแบบจำลองมีอคติในช่วงนั้น</td></tr></tbody></table>
+
+  <h3>7.5 กราฟ Historical → Prediction → Forecast</h3>
+  <p>กราฟนี้ต่ออนุกรมเต็มช่วง 1993-01 – 2024-12 เข้ากับค่าพยากรณ์ในช่วง Test
+  เพื่อให้เห็นภาพต่อเนื่องตั้งแต่อดีตถึงช่วงที่แบบจำลองทำนาย</p>
+  <div class="note warn"><span class="note__t">ส่วน Forecast แสดง N/A</span><span class="note__b">งานวิจัยพยากรณ์แบบ 1-step-ahead บนชุด Test (2020–2024) เท่านั้น ไม่ได้ผลิตค่าพยากรณ์ล่วงหน้าเลยปี 2024 forecast.csv จึงว่าง และหน้าเว็บแสดง N/A รายละเอียดอยู่ในหัวข้อ 9.3</span></div>
+
+  <h3>7.6 ความสำคัญของตัวแปรใน Random Forest</h3>
+  <p>กราฟแท่งแสดงว่าตัวแปรใดมีบทบาทมากในการทำนายของ Random Forest
+  สลับดูได้สองมาตรวัดด้วยปุ่มด้านบนกราฟ</p>
+  <table class="t "><caption>ตารางที่ 7.2 สองมาตรวัดความสำคัญของตัวแปร</caption><thead><tr><th class='text'>มาตรวัด</th><th>ความหมาย</th><th>ข้อควรระวัง</th></tr></thead><tbody><tr><td class='text'>MDI (Mean Decrease in Impurity)</td><td>วัดจากโครงสร้างต้นไม้ภายในแบบจำลอง ผลรวมของทุกตัวแปรในสถานีหนึ่งเท่ากับ 1</td><td>มีแนวโน้มให้ค่าสูงกับตัวแปรที่มีค่าหลากหลาย</td></tr><tr><td class='text'>Permutation (dRMSE)</td><td>วัดจากการสุ่มสลับค่าตัวแปรแล้วดูว่า RMSE บนชุด Test แย่ลงเท่าไร ค่ายิ่งสูงยิ่งสำคัญ</td><td>ค่าติดลบหมายถึงสลับแล้วผลดีขึ้นเล็กน้อย ตีความว่าตัวแปรนั้นแทบไม่มีบทบาท</td></tr></tbody></table>
+  <p>แท่งกราฟมีเส้นแสดงความไม่แน่นอนกำกับ และมีหัวข้อพับเก็บให้ดูค่าเป็นตารางได้</p>
+
+  <h3>7.7 ตารางพารามิเตอร์สุดท้าย</h3>
+  <p>ตารางท้ายหน้าแสดงมิติข้อมูลเข้าและพารามิเตอร์ที่ถูกเลือกใช้จริงของแต่ละ
+  แบบจำลองในแต่ละสถานี ค่าทั้งหมดถูกเลือกด้วยชุด Validation เท่านั้น
+  ดูค่าเต็มได้ในภาคผนวก จ</p>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">8</span>หน้าที่ 5 — รายงานอัตโนมัติ</heading2>
+  <p class="lead">รวมผลทั้งการศึกษาไว้เป็นรายงานฉบับเดียว พร้อมบทสรุป ข้อค้นพบ
+  ตารางทั้งหมด และภาคผนวกวิธีการ ใช้สำหรับนำเสนอหรือแนบเข้าเอกสารได้ทันที</p>
+
+  <h3>8.1 หลักการทำงาน</h3>
+  <p>หน้านี้ <b>ไม่เก็บตัวเลขหรือข้อสรุปใดไว้ในหน้าเว็บ</b>
+  ทุกครั้งที่เปิดหน้า ระบบจะอ่านไฟล์ในโฟลเดอร์ <code>data/</code>
+  แล้วเรียบเรียงรายงานขึ้นใหม่ทั้งฉบับ เมื่อข้อมูลเปลี่ยน รายงานจึงเปลี่ยนตามเอง
+  โดยไม่ต้องแก้ข้อความใด ๆ</p>
+  <table class="t "><caption>ตารางที่ 8.1 ประเภทของค่าในหน้ารายงาน</caption><thead><tr><th class='text'>ประเภทของค่า</th><th>ที่มา</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td class='text'>อ่านตรงจากไฟล์</td><td>ไม่มีการคำนวณใหม่</td><td>RMSE, MAE, R², MSE, ค่า SLA, ค่า ERA5, ความสำคัญของตัวแปร, พารามิเตอร์</td></tr><tr><td class='text'>สรุปเชิงพรรณนา</td><td>คำนวณจากค่าที่อ่านมา และกำกับไว้ในตารางทุกจุด</td><td>การจัดอันดับแบบจำลอง, จำนวนสถานีที่แต่ละแบบจำลองชนะ, ค่าเฉลี่ยข้ามสถานี, ส่วนต่างร้อยละ</td></tr><tr><td class='text'>ไม่มีในไฟล์</td><td>แสดง <code>N/A</code> ไม่เดาค่า</td><td>ค่าพยากรณ์หลังช่วงข้อมูล</td></tr></tbody></table>
+
+  <h3>8.2 องค์ประกอบของรายงาน</h3>
+  <table class="t "><caption>ตารางที่ 8.2 องค์ประกอบของหน้ารายงานอัตโนมัติ</caption><thead><tr><th class='text'>ส่วน</th><th>เนื้อหา</th></tr></thead><tbody><tr><td class='text'>หัวรายงาน</td><td>ชื่อเรื่อง เวลาที่เรียบเรียง จำนวนสถานี ช่วงข้อมูล และที่มาของไฟล์</td></tr><tr><td class='text'>ตัวเลขหลัก 4 ช่อง</td><td>แบบจำลองที่ดีที่สุดโดยรวม ช่วง RMSE ช่วงแนวโน้ม และสถานะค่าพยากรณ์</td></tr><tr><td class='text'>บทสรุปและข้อค้นพบ</td><td>ย่อหน้าสรุปวิธีการและผล ต่อด้วยข้อค้นพบเรียงเป็นข้อ</td></tr><tr><td class='text'>ตารางที่ 1</td><td>พื้นที่ศึกษา สถิติ SLA รายสถานี และแบบจำลองที่ดีที่สุด</td></tr><tr><td class='text'>ตารางที่ 2</td><td>เมทริกซ์ RMSE สถานี × แบบจำลอง ช่องที่ดีที่สุดถูกไฮไลต์ พร้อมแถวค่าเฉลี่ย</td></tr><tr><td class='text'>รูปที่ 1–2</td><td>กราฟแท่ง RMSE ของแบบจำลองที่ดีที่สุด และแนวโน้ม SLA รายสถานี</td></tr><tr><td class='text'>ตารางที่ 3</td><td>ค่าเฉลี่ยตัวชี้วัดข้ามสถานีของแต่ละแบบจำลอง พร้อมอันดับเฉลี่ย</td></tr><tr><td class='text'>รายงานรายสถานี</td><td>การ์ดต่อสถานี บอกสถิติ อันดับแบบจำลอง และตัวแปรสำคัญ 3 อันดับแรก</td></tr><tr><td class='text'>ตารางที่ 4–5</td><td>ช่วงค่าตัวแปร ERA5 และความสำคัญของตัวแปรเฉลี่ยข้ามสถานี</td></tr><tr><td class='text'>ขอบเขตการพยากรณ์</td><td>ระบุชัดว่ามีค่าพยากรณ์ช่วงใด และเหตุที่ค่าอนาคตเป็น N/A</td></tr><tr><td class='text'>ภาคผนวก</td><td>การตั้งค่าการทดลอง ตารางที่ 6 พารามิเตอร์ แหล่งข้อมูล และหมายเหตุ</td></tr></tbody></table>
+
+  <h3>8.3 ปุ่มบนหัวรายงาน</h3>
+  <table class="t "><caption>ตารางที่ 8.3 ปุ่มบนหัวรายงาน</caption><thead><tr><th class='text'>ปุ่ม</th><th>หน้าที่</th><th>รายละเอียด</th></tr></thead><tbody><tr><td class='text'>พิมพ์ / บันทึกเป็น PDF</td><td>เปิดหน้าต่างพิมพ์ของเบราว์เซอร์</td><td>ระบบมีชุดรูปแบบสำหรับพิมพ์แยกไว้ — บังคับโทนสว่างเพื่อประหยัดหมึก ซ่อนแถบเมนูและปุ่ม ตั้งกระดาษ A4 กันตารางและกราฟถูกตัดขาดกลางหน้า และพิมพ์เฉพาะหน้ารายงานแม้สั่งพิมพ์จากหน้าอื่น เลือกปลายทางเป็น “Save as PDF” เพื่อได้ไฟล์ PDF</td></tr><tr><td class='text'>คัดลอกบทสรุป</td><td>คัดลอกเป็นข้อความล้วน</td><td>ได้บทสรุป ข้อค้นพบทุกข้อ และตาราง RMSE รายสถานี นำไปวางในเอกสารรายงานหรือข้อความได้ทันที ปุ่มจะขึ้นว่าคัดลอกแล้วเมื่อสำเร็จ</td></tr></tbody></table>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">9</span>การอ่านและตีความค่า</h2>
+  <p class="lead">หัวข้อนี้สำคัญต่อการนำผลไปอ้างอิง โปรดอ่านก่อนนำตัวเลขไปใช้ในรายงาน</p>
+
+  <h3>9.1 ตัวชี้วัด</h3>
+  <table class="t "><caption>ตารางที่ 9.1 ตัวชี้วัดที่ใช้ในระบบ</caption><thead><tr><th class='text'>ตัวชี้วัด</th><th>ความหมาย</th><th>ทิศทางที่ดี</th><th>หน่วย</th></tr></thead><tbody><tr><td class='text'><b>RMSE</b><br>Root Mean Squared Error</td><td>รากที่สองของค่าเฉลี่ยกำลังสองของความคลาดเคลื่อน ให้น้ำหนักกับความคลาดเคลื่อนก้อนใหญ่มาก</td><td>ยิ่งต่ำยิ่งดี</td><td>เมตร</td></tr><tr><td class='text'><b>MAE</b><br>Mean Absolute Error</td><td>ค่าเฉลี่ยของขนาดความคลาดเคลื่อน อ่านง่ายกว่าเพราะเป็นหน่วยเดียวกับข้อมูล</td><td>ยิ่งต่ำยิ่งดี</td><td>เมตร</td></tr><tr><td class='text'><b>MSE</b><br>Mean Squared Error</td><td>ค่าเฉลี่ยกำลังสองของความคลาดเคลื่อน เป็นค่าก่อนถอดรากของ RMSE</td><td>ยิ่งต่ำยิ่งดี</td><td>ตารางเมตร</td></tr><tr><td class='text'><b>R²</b><br>Coefficient of Determination</td><td>สัดส่วนความแปรปรวนของข้อมูลที่แบบจำลองอธิบายได้ ค่า 1 คือทำนายตรงทุกจุด</td><td>ยิ่งสูงยิ่งดี</td><td>ไม่มีหน่วย</td></tr></tbody></table>
+  <p>งานวิจัยกำหนดให้ <b>RMSE (m)</b> เป็นตัวชี้วัดหลัก
+  การตัดสินว่าแบบจำลองใดดีที่สุดในระบบนี้จึงใช้ RMSE ต่ำสุดเสมอ
+  ไม่ได้ใช้ R² หรือ MAE เพื่อให้เกณฑ์คงที่ตรงกันทุกที่</p>
+
+  <h3>9.2 แนวโน้มเป็นสถิติเชิงพรรณนา</h3>
+  <div class="note warn"><span class="note__t">อ่านให้ถูกต้อง</span><span class="note__b">แนวโน้มเชิงเส้นคำนวณจากอนุกรม SLA ที่แสดงบนกราฟด้วย np.polyfit(deg=1) ซึ่งเป็นวิธีเดียวกับ detrend_linear() ในโน้ตบุ๊ก เป็นสถิติเชิงพรรณนาของข้อมูล ไม่ใช่ผลลัพธ์ของแบบจำลอง</span></div>
+  <p>กล่าวคือค่ามิลลิเมตรต่อปีที่แสดงเป็นการสรุปลักษณะของข้อมูลที่เห็นบนกราฟ
+  ไม่ใช่ผลลัพธ์ของ SARIMA, Random Forest หรือ LSTM
+  และไม่ควรนำไปอ้างเป็นอัตราการเพิ่มของระดับน้ำทะเลในอนาคต</p>
+
+  <h3>9.3 ทำไม Forecast เป็น N/A</h3>
+  <p>งานวิจัยออกแบบให้พยากรณ์แบบ <b>1-step-ahead</b> คือใช้ข้อมูลถึงเดือนหนึ่ง
+  เพื่อทำนายเดือนถัดไป แล้ววัดผลบนชุด Test
+  (2020-01 ถึง 2024-12)
+  ไม่ได้ผลิตค่าพยากรณ์ของเดือนที่ยังไม่มีข้อมูลจริง</p>
+  <p>ระบบจึงแสดง <code>N/A</code> ตามความเป็นจริง
+  <b>ไม่สร้างค่าพยากรณ์ขึ้นเองในหน้าเว็บ</b>
+  ถ้าภายหลังงานวิจัยผลิตค่าพยากรณ์อนาคตออกมา ให้เติมแถวลงไฟล์
+  <code>forecast.csv</code> ตามหัวตาราง
+  <code>station, date, model, forecast_m, lower_m, upper_m</code>
+  ระบบจะวาดเส้น Forecast และเปลี่ยนข้อความจาก N/A ให้เองโดยไม่ต้องแก้โค้ด</p>
+
+  <h3>9.4 ความสำคัญของตัวแปรอ่านอย่างไร</h3>
+  <p>ค่าความสำคัญบอกว่า <b>แบบจำลองใช้ตัวแปรใดในการทำนาย</b>
+  ไม่ใช่ข้อสรุปว่าตัวแปรนั้นเป็นสาเหตุทางกายภาพของการเปลี่ยนแปลงระดับน้ำ
+  ความสัมพันธ์ทางสถิติกับความเป็นเหตุเป็นผลเป็นเรื่องต่างกัน</p>
+  <p>ควรดูทั้งสองมาตรวัดประกอบกัน ตัวแปรที่สำคัญจริงมักติดอันดับสูงทั้งสองแบบ
+  และติดอันดับสูงในหลายสถานี ซึ่งหน้ารายงานสรุปให้แล้วในคอลัมน์
+  “ติด 3 อันดับแรก”</p>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">10</span>ไฟล์ข้อมูลของระบบ</h2>
+  <p class="lead">ทุกไฟล์อยู่ในโฟลเดอร์ <code>data/</code> สร้างจากสคริปต์
+  <b>ห้ามแก้ด้วยมือ</b> เพราะการแก้มือจะทำให้ข้อมูลไม่ตรงกับผลการศึกษา
+  และตรวจย้อนกลับไม่ได้</p>
+  <table class="t "><caption>ตารางที่ 10.1 ไฟล์ข้อมูลทั้งหมดของระบบ</caption><thead><tr><th class='text'>ไฟล์</th><th>เนื้อหา</th><th>ขนาด</th><th>คอลัมน์/รูปแบบ</th></tr></thead><tbody><tr><td class='text'><code>stations.geojson</code></td><td>จุดสถานีและ Study Box</td><td>4 จุด + 4 กล่อง</td><td>GeoJSON</td></tr><tr><td class='text'><code>sla_historical.csv</code></td><td>อนุกรม SLA รายเดือน</td><td>1,536 แถว</td><td><code>station, date, sla_m</code></td></tr><tr><td class='text'><code>meteorology.csv</code></td><td>ตัวแปร ERA5 รายเดือน</td><td>1,536 แถว</td><td><code>station, date, sst_c, slp_hpa, u10_ms, v10_ms</code></td></tr><tr><td class='text'><code>model_predictions.csv</code></td><td>ค่าจริงและค่าพยากรณ์ชุด Test</td><td>720 แถว</td><td><code>station, date, model, split, actual_m, predicted_m, residual_m</code></td></tr><tr><td class='text'><code>model_metrics.csv</code></td><td>ตัวชี้วัดทุกแบบจำลอง</td><td>12 แถว</td><td><code>station, model, mse, mae, rmse, r2, is_best</code></td></tr><tr><td class='text'><code>model_settings.csv</code></td><td>มิติข้อมูลเข้าและพารามิเตอร์</td><td>12 แถว</td><td><code>station, model, input_dimension, main_parameters</code></td></tr><tr><td class='text'><code>rf_feature_importance.csv</code></td><td>ความสำคัญของตัวแปร</td><td>44 แถว</td><td>MDI, permutation, อันดับ และค่าความไม่แน่นอน</td></tr><tr><td class='text'><code>monthly_climatology.csv</code></td><td>ค่าเฉลี่ยรายเดือนตามปฏิทิน</td><td>48 แถว</td><td><code>station, month, mean_m, sd_m, min_m, max_m, n_years, mean_detrended_m</code></td></tr><tr><td class='text'><code>forecast.csv</code></td><td>ค่าพยากรณ์อนาคต</td><td>มีแต่หัวตาราง</td><td><code>station, date, model, forecast_m, lower_m, upper_m</code></td></tr><tr><td class='text'><code>meta.json</code></td><td>ที่มาข้อมูล สถิติ การตั้งค่า และหมายเหตุ</td><td>1 ไฟล์</td><td>JSON</td></tr></tbody></table>
+  <p>คอลัมน์ <code>is_best</code> ในไฟล์ตัวชี้วัดถูกเติมโดยเลือกแถวที่ RMSE ต่ำสุด
+  ของแต่ละสถานี ไม่มีการเปลี่ยนค่าตัวชี้วัดใด ๆ</p>
+  <div class="note "><span class="note__t">หน่วยของข้อมูล</span><span class="note__b">ค่า SLA และค่าพยากรณ์ทั้งหมดเป็น <b>เมตร</b> · MSE เป็นตารางเมตร · SST เป็นองศาเซลเซียส · SLP เป็นเฮกโตปาสคาล · u10 และ v10 เป็นเมตรต่อวินาที · แนวโน้มเป็นมิลลิเมตรต่อปี</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">11</span>การอัปเดตข้อมูลจากผลการศึกษา</h2>
+  <p class="lead">ทำเมื่อรันโน้ตบุ๊กใหม่แล้วได้ผลการศึกษาชุดใหม่
+  ต้องทำใน repo งานวิจัยเท่านั้น เพราะ repo เฉพาะเว็บไม่มีโน้ตบุ๊กและไฟล์ต้นทาง</p>
+
+  <h3>11.1 ลำดับการทำงานของข้อมูล</h3>
+  <div class="flow">
+    <div class="flow__i">โน้ตบุ๊กวิจัย<br><span>SLA_predict_SARIMA_RF_LSTM.ipynb</span></div>
+    <div class="flow__a">→</div>
+    <div class="flow__i">ไฟล์ผลการศึกษา<br><span>outputs_fair_comparison/</span></div>
+    <div class="flow__a">→</div>
+    <div class="flow__i">สคริปต์แปลงข้อมูล<br><span>scripts/build_web_data.py</span></div>
+    <div class="flow__a">→</div>
+    <div class="flow__i">ไฟล์ของเว็บ<br><span>webapp/data/</span></div>
+    <div class="flow__a">→</div>
+    <div class="flow__i">หน้าเว็บและรายงาน<br><span>อ่านมาแสดงเท่านั้น</span></div>
+  </div>
+
+  <h3>11.2 คำสั่ง</h3>
+  <ol class="steps"><li>รันโน้ตบุ๊กให้ได้โฟลเดอร์ <code>outputs_fair_comparison/</code> ครบก่อน</li><li>สั่ง <code>python scripts/build_web_data.py</code> ที่รากของ repo งานวิจัย</li><li>ถ้าโฟลเดอร์ผลอยู่คนละที่กับ repo ให้ระบุเอง<br><code>python scripts/build_web_data.py --results &quot;&lt;path&gt;/outputs_fair_comparison&quot;</code></li><li>ตรวจข้อความที่สคริปต์พิมพ์ออกมา ต้องเห็นจำนวนแถวของทุกไฟล์และไม่มีคำเตือน</li><li>เปิดเว็บในเครื่องตรวจดูว่าตัวเลขเปลี่ยนตามที่คาด</li><li>commit แล้ว push ตามหัวข้อ 12</li></ol>
+  <p>สคริปต์ค้นหาโฟลเดอร์ผลเองโดยไล่ดูโฟลเดอร์ใกล้เคียง จึงไม่มีการฝัง path
+  แบบเต็มของเครื่องใดเครื่องหนึ่งไว้ในโค้ด</p>
+
+  <h3>11.3 ไฟล์สองตัวที่ต้องรันเซลล์แยก</h3>
+  <p>ไฟล์ผลสองตัวนี้มาจากเซลล์ที่ต้องสั่งรันแยกในโน้ตบุ๊ก</p>
+  <table class="t "><caption>ตารางที่ 11.1 ไฟล์ที่ต้องรันเซลล์เพิ่ม</caption><thead><tr><th class='text'>ไฟล์ปลายทาง</th><th>ไฟล์ต้นทาง</th><th>เซลล์ที่สร้าง</th></tr></thead><tbody><tr><td class='text'><code>rf_feature_importance.csv</code></td><td><code>rf_feature_importance_by_station.csv</code></td><td>13.5b — RF FEATURE IMPORTANCE</td></tr><tr><td class='text'><code>monthly_climatology.csv</code></td><td><code>monthly_climatology_long.csv</code></td><td>Monthly Climatology (หัวข้อ 4.1.2.1)</td></tr></tbody></table>
+  <p>สคริปต์จะหาไฟล์ต้นทางสองตัวนี้ตามลำดับ คือในโฟลเดอร์
+  <code>separated_preprocessing/</code> จากนั้นในโฟลเดอร์ผล และท้ายสุดที่รากของ repo</p>
+  <div class="note "><span class="note__t">ถ้าหาไฟล์ต้นทางไม่เจอ</span><span class="note__b">สคริปต์จะ <b>คงไฟล์เดิมไว้พร้อมเตือนบนหน้าจอ</b> ไม่เขียนทับด้วยไฟล์ว่างและไม่สร้างค่าขึ้นมาแทน แต่ถ้ายังไม่เคยสร้างไฟล์นั้นเลย สคริปต์จะหยุดและบอกว่าต้องรันเซลล์ไหนก่อน</span></div>
+
+  <h3>11.4 สิ่งที่ห้ามแก้</h3>
+  <p>สคริปต์และหน้าเว็บถูกออกแบบให้ไม่แตะผลทางวิทยาศาสตร์
+  การเปลี่ยนสิ่งต่อไปนี้จะทำให้ตัวเลขไม่ตรงกับงานวิจัยและต้องรันการทดลองใหม่ทั้งหมด</p>
+  <ul class="cols">
+    <li>การแบ่ง Train / Validation / Test</li>
+    <li>ชุดฟีเจอร์และตัวแปรเป้าหมาย</li>
+    <li>ค่า lookback และ forecast horizon</li>
+    <li>ค่า hyperparameter และ seed</li>
+    <li>โครงสร้างแบบจำลอง</li>
+    <li>สูตรและค่าของตัวชี้วัด</li>
+    <li>ค่าพยากรณ์ที่บันทึกไว้</li>
+    <li>ขั้นตอนทางวิทยาศาสตร์อื่นในโน้ตบุ๊ก</li>
+  </ul>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">12</span>การนำขึ้นเว็บ</h2>
+  <p class="lead">ระบบเป็นเว็บสถิต ไม่มี backend ไม่มีฐานข้อมูล และไม่มีขั้นตอน build
+  จึงเผยแพร่ด้วย GitHub Pages ได้โดยไม่มีค่าใช้จ่าย</p>
+
+  <h3>12.1 repo ทั้งสองและวิธี deploy</h3>
+  <table class="t "><caption>ตารางที่ 12.1 repo และวิธีเผยแพร่</caption><thead><tr><th class='text'>repo</th><th>โครงสร้าง</th><th>วิธี deploy</th></tr></thead><tbody><tr><td class='text'><b>Demo_SLA</b><br><code>https://github.com/Jariya-aum/Demo_SLA</code></td><td>เว็บอยู่ใต้ <code>webapp/</code> พร้อมโน้ตบุ๊ก <code>Rawdata/</code> และ <code>scripts/</code></td><td>GitHub Actions คัดลอก <code>webapp/</code> ขึ้น branch <code>gh-pages</code> ให้เองทุกครั้งที่ push แตะโฟลเดอร์นั้น</td></tr><tr><td class='text'><b>Demo_SLA_Web_app</b><br><code>https://github.com/Jariya-aum/Demo_SLA_Web_app</code></td><td>ไฟล์เว็บอยู่ที่ <b>root</b> ของ repo</td><td>GitHub Pages เสิร์ฟจาก <code>main</code> / <code>(root)</code> โดยตรง ไม่ใช้ Actions</td></tr></tbody></table>
+
+  <h3>12.2 การซิงก์ระหว่างสอง repo</h3>
+  <div class="note warn"><span class="note__t">สอง repo ไม่ซิงก์กันเอง</span><span class="note__b">เมื่อแก้ไฟล์ในโฟลเดอร์ <code>webapp/</code> แล้ว การ push เข้า repo งานวิจัย อย่างเดียวจะทำให้ repo เฉพาะเว็บค้างเวอร์ชันเก่าโดยไม่มีอะไรเตือน ต้องสั่งซิงก์เพิ่มอีกหนึ่งคำสั่ง</span></div>
+  <ol class="steps"><li>commit การแก้ไขลง branch <code>main</code> ของ repo งานวิจัยให้เรียบร้อย</li><li><code>git push origin main</code> — repo งานวิจัยจะ deploy ตัวเองผ่าน Actions</li><li><code>git subtree push --prefix=webapp webapp-repo main</code> — ยกโฟลเดอร์ <code>webapp/</code> ขึ้นเป็น root ของ repo เฉพาะเว็บ</li></ol>
+  <p>ถ้ายังไม่เคยผูก remote ให้สั่งครั้งเดียวว่า<br>
+  <code>git remote add webapp-repo https://github.com/Jariya-aum/Demo_SLA_Web_app.git</code></p>
+  <p>คำสั่ง subtree อ่านจาก commit ไม่ได้อ่านจากไฟล์ในเครื่อง
+  จึงต้อง commit ก่อนเสมอ ไม่เช่นนั้นจะไม่เห็นการเปลี่ยนแปลง</p>
+
+  <h3>12.3 การตั้งค่า GitHub Pages</h3>
+  <table class="t "><caption>ตารางที่ 12.2 การตั้งค่า Pages ของแต่ละ repo</caption><thead><tr><th class='text'>repo</th><th>Settings → Pages → Source</th><th>ที่อยู่ผลลัพธ์</th></tr></thead><tbody><tr><td class='text'>Demo_SLA</td><td>Deploy from a branch → <code>gh-pages</code> / <code>(root)</code></td><td><code>https://jariya-aum.github.io/Demo_SLA/</code></td></tr><tr><td class='text'>Demo_SLA_Web_app</td><td>Deploy from a branch → <code>main</code> / <code>(root)</code></td><td><code>https://jariya-aum.github.io/Demo_SLA_Web_app/</code></td></tr></tbody></table>
+
+  <h3>12.4 สิ่งที่ต้องตรวจก่อนเผยแพร่</h3>
+  <ul class="check">
+    <li>ไม่มี path แบบเต็มของเครื่อง เช่น <code>D:\…</code> ในโค้ดหรือไฟล์ข้อมูล</li>
+    <li>ไม่มีกุญแจ รหัสผ่าน หรือไฟล์ service account ในโฟลเดอร์ที่ถูกเผยแพร่</li>
+    <li>ทุก path ที่อ้างถึงไฟล์เป็น relative path จึงทำงานได้ทั้งที่ root และใต้ path ย่อย</li>
+    <li>มีไฟล์ <code>.nojekyll</code> เพื่อกันไม่ให้ระบบเผยแพร่ทิ้งไฟล์บางชนิด</li>
+    <li>เปิดหน้าเว็บแล้วโหลดไฟล์ใน <code>data/</code> ได้ครบทุกไฟล์</li>
+  </ul>
+  <div class="note warn"><span class="note__t">ไฟล์กุญแจ</span><span class="note__b">โฟลเดอร์งานวิจัยมีไฟล์กุญแจของ Google Earth Engine อยู่ ไฟล์นั้นถูกกำหนดให้ git ไม่เก็บและไม่ถูกเผยแพร่ อย่านำไฟล์ลักษณะนี้ไปวางในโฟลเดอร์ <code>webapp/</code> เพราะทั้งโฟลเดอร์ถูกเผยแพร่สู่สาธารณะ</span></div>
+</section>
+<section class="chapter">
+  <h2><span class="h2__n">13</span>ปัญหาที่พบบ่อยและวิธีแก้</h2>
+  <table class="t "><caption>ตารางที่ 13.1 ปัญหาที่พบบ่อย</caption><thead><tr><th class='text'>อาการ</th><th>สาเหตุที่พบบ่อย</th><th>วิธีแก้</th></tr></thead><tbody><tr><td class='text'>หน้าเว็บขึ้นว่า “โหลดข้อมูลไม่สำเร็จ”</td><td>เปิดไฟล์ด้วย <code>file://</code> ซึ่งเบราว์เซอร์บล็อกการอ่านไฟล์ในโฟลเดอร์ย่อย</td><td>เปิดผ่านเว็บเซิร์ฟเวอร์ตามหัวข้อ 2.2</td></tr><tr><td class='text'>ข้อความบอกว่าไม่พบไฟล์ในโฟลเดอร์ <code>data/</code></td><td>ยังไม่ได้สร้างไฟล์ข้อมูล</td><td>สั่ง <code>python scripts/build_web_data.py</code> ตามหัวข้อ 11</td></tr><tr><td class='text'>แผนที่เป็นพื้นว่าง กราฟไม่ขึ้น</td><td>ไม่ได้ต่ออินเทอร์เน็ต ไลบรารีและแผนที่ฐานจึงโหลดไม่ได้</td><td>ตรวจการเชื่อมต่อ แล้วโหลดหน้าใหม่</td></tr><tr><td class='text'>เว็บที่เผยแพร่ยังเป็นเวอร์ชันเก่า</td><td>ระบบเผยแพร่ยังทำงานไม่เสร็จ หรือเบราว์เซอร์เก็บไฟล์เดิมไว้ หรือลืมซิงก์ไป repo เฉพาะเว็บ</td><td>รอสักครู่ กดโหลดใหม่แบบข้ามแคช (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) และตรวจว่าได้สั่ง subtree push ตามหัวข้อ 12.2</td></tr><tr><td class='text'>repo เฉพาะเว็บตอบว่าไม่พบหน้า</td><td>ยังไม่ได้เปิด GitHub Pages ของ repo นั้น</td><td>ตั้งค่าตามตารางที่ 12.2</td></tr><tr><td class='text'>สคริปต์เตือนว่าไม่พบไฟล์ผลบางตัว</td><td>ยังไม่ได้รันเซลล์ที่สร้างไฟล์นั้นในโน้ตบุ๊ก</td><td>รันเซลล์ตามตารางที่ 11.1 แล้วสั่งสคริปต์อีกครั้ง</td></tr><tr><td class='text'>ค่าพยากรณ์อนาคตเป็น N/A</td><td>ไม่ใช่ข้อผิดพลาด — งานวิจัยไม่ได้ผลิตค่าพยากรณ์ล่วงหน้าไว้</td><td>อ่านคำอธิบายในหัวข้อ 9.3</td></tr><tr><td class='text'>ตัวหนังสือไทยในไฟล์ที่พิมพ์ออกมาดูผิดตำแหน่ง</td><td>ฟอนต์ที่เบราว์เซอร์เลือกใช้ไม่รองรับภาษาไทยครบ</td><td>พิมพ์จาก Chrome หรือ Edge ซึ่งจัดวางสระและวรรณยุกต์ไทยได้ถูกต้อง</td></tr></tbody></table>
+</section><section class="page-break"><h2><span class="h2__n">14</span>ภาคผนวก</h2>
+  <h3>ภาคผนวก ก — สถิติ SLA รายสถานี</h3>
+  <p class="src">ที่มา: <code>meta.json</code> และ <code>sla_historical.csv</code> ·
+  คำนวณจากอนุกรมเต็มช่วง 1993-01 – 2024-12 (384 เดือน)</p>
+  <table class="t "><caption>ตารางที่ ก.1 สถิติเชิงพรรณนาของ SLA รายสถานี</caption><thead><tr><th class='text'>สถานี</th><th>SLA ล่าสุด (m)</th><th>เฉลี่ย (m)</th><th>ต่ำสุด (m)</th><th>สูงสุด (m)</th><th>SD (m)</th><th>แนวโน้ม (mm/ปี)</th></tr></thead><tbody><tr><td class='text'><b>1. Wat Khun Samut Chin</b><br><span class="sub">วัดขุนสมุทรจีน</span></td><td>+0.2733<br><span class="sub">2024-12</span></td><td>+0.0322</td><td>-0.2483<br><span class="sub">1993-08</span></td><td>+0.3802<br><span class="sub">2013-01</span></td><td>0.1504</td><td><b>+4.94</b></td></tr><tr><td class='text'><b>2. Laem Chabang Port</b><br><span class="sub">ท่าเรือแหลมฉบัง</span></td><td>+0.3012<br><span class="sub">2024-12</span></td><td>+0.0333</td><td>-0.2311<br><span class="sub">1999-07</span></td><td>+0.3822<br><span class="sub">2013-01</span></td><td>0.1516</td><td><b>+4.72</b></td></tr><tr><td class='text'><b>3. Upper Gulf Offshore</b><br><span class="sub">พื้นที่ตอนล่างของอ่าวไทยตอนบน</span></td><td>+0.3151<br><span class="sub">2024-12</span></td><td>+0.0362</td><td>-0.2358<br><span class="sub">1993-08</span></td><td>+0.3917<br><span class="sub">2022-12</span></td><td>0.1557</td><td><b>+4.70</b></td></tr><tr><td class='text'><b>4. Phetchaburi Bangkawe</b><br><span class="sub">ชายฝั่งทะเลตำบลบางแก้ว</span></td><td>+0.2994<br><span class="sub">2024-12</span></td><td>+0.0376</td><td>-0.2109<br><span class="sub">1993-08</span></td><td>+0.3706<br><span class="sub">2022-12</span></td><td>0.1411</td><td><b>+4.73</b></td></tr></tbody></table>
+  <h3>ภาคผนวก ข — ตัวชี้วัดทุกแบบจำลอง</h3>
+  <p class="src">ที่มา: <code>model_metrics.csv</code> ·
+  ผลบนชุด Test 2020-01 – 2024-12 แบบ 1-step-ahead
+  สเกลจริง (เมตร) · ตัวเลขคัดลอกจากไฟล์ผลการศึกษาโดยตรง</p>
+  <table class="t "><caption>ตารางที่ ข.1 ตัวชี้วัดของทั้งสามแบบจำลองทุกสถานี</caption><thead><tr><th class='text'>สถานี</th><th>แบบจำลอง</th><th>MSE (m²)</th><th>MAE (m)</th><th>RMSE (m)</th><th>R²</th><th></th></tr></thead><tbody><tr><td class='text'><b>1. Wat Khun Samut Chin</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>0.002348</td><td>0.0418</td><td><b>0.0485</b></td><td>0.8905</td><td><b>ดีที่สุด</b></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>0.004443</td><td>0.0551</td><td><b>0.0667</b></td><td>0.7929</td><td></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>0.005600</td><td>0.0629</td><td><b>0.0748</b></td><td>0.7389</td><td></td></tr><tr><td class='text'><b>2. Laem Chabang Port</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>0.002094</td><td>0.0380</td><td><b>0.0458</b></td><td>0.9061</td><td><b>ดีที่สุด</b></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>0.004292</td><td>0.0557</td><td><b>0.0655</b></td><td>0.8075</td><td></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>0.005416</td><td>0.0616</td><td><b>0.0736</b></td><td>0.7572</td><td></td></tr><tr><td class='text'><b>3. Upper Gulf Offshore</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>0.002218</td><td>0.0395</td><td><b>0.0471</b></td><td>0.9053</td><td><b>ดีที่สุด</b></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>0.003478</td><td>0.0502</td><td><b>0.0590</b></td><td>0.8515</td><td></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>0.005300</td><td>0.0615</td><td><b>0.0728</b></td><td>0.7737</td><td></td></tr><tr><td class='text'><b>4. Phetchaburi Bangkawe</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>0.001623</td><td>0.0345</td><td><b>0.0403</b></td><td>0.9141</td><td><b>ดีที่สุด</b></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>0.003316</td><td>0.0485</td><td><b>0.0576</b></td><td>0.8245</td><td></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>0.004667</td><td>0.0559</td><td><b>0.0683</b></td><td>0.7530</td><td></td></tr></tbody></table>
+  <h3>ภาคผนวก ค — ความสำคัญของตัวแปรใน Random Forest</h3>
+  <p class="src">ที่มา: <code>rf_feature_importance.csv</code> ·
+  ค่าเฉลี่ยข้ามทั้ง 4 สถานี · MDI ของแต่ละสถานีรวมกันได้ 1 · permutation บนชุด Test สุ่มสลับ 30 รอบ (n = 60 เดือน)</p>
+  <table class="t "><caption>ตารางที่ ค.1 ความสำคัญของตัวแปรเรียงตาม MDI เฉลี่ย</caption><thead><tr><th class='text'>ตัวแปร</th><th>กลุ่ม</th><th>MDI เฉลี่ย</th><th>dRMSE เฉลี่ย (m)</th><th>อันดับเฉลี่ย</th><th>ติด 3 อันดับแรก</th></tr></thead><tbody><tr><td class='text'><code>v10</code></td><td>ERA5 forcing</td><td><b>0.3017</b></td><td>+0.03009</td><td>1.00</td><td>4 / 4</td></tr><tr><td class='text'><code>SLP</code></td><td>ERA5 forcing</td><td><b>0.2127</b></td><td>+0.00792</td><td>2.00</td><td>4 / 4</td></tr><tr><td class='text'><code>month_cos</code></td><td>Seasonal</td><td><b>0.1362</b></td><td>+0.02178</td><td>3.25</td><td>3 / 4</td></tr><tr><td class='text'><code>SLA_hist</code></td><td>SLA history</td><td><b>0.0988</b></td><td>+0.01403</td><td>3.75</td><td>1 / 4</td></tr><tr><td class='text'><code>SLA_lag12</code></td><td>SLA history</td><td><b>0.0786</b></td><td>+0.00741</td><td>5.25</td><td>0 / 4</td></tr><tr><td class='text'><code>u10</code></td><td>ERA5 forcing</td><td><b>0.0425</b></td><td>+0.00194</td><td>8.25</td><td>0 / 4</td></tr><tr><td class='text'><code>month_sin</code></td><td>Seasonal</td><td><b>0.0300</b></td><td>+0.00149</td><td>7.25</td><td>0 / 4</td></tr><tr><td class='text'><code>SLA_lag3</code></td><td>SLA history</td><td><b>0.0298</b></td><td>+0.00241</td><td>7.50</td><td>0 / 4</td></tr><tr><td class='text'><code>SLA_lag6</code></td><td>SLA history</td><td><b>0.0274</b></td><td>+0.00229</td><td>8.00</td><td>0 / 4</td></tr><tr><td class='text'><code>SST</code></td><td>ERA5 forcing</td><td><b>0.0227</b></td><td>-0.00059</td><td>9.50</td><td>0 / 4</td></tr><tr><td class='text'><code>SLA_lag1</code></td><td>SLA history</td><td><b>0.0196</b></td><td>+0.00103</td><td>10.25</td><td>0 / 4</td></tr></tbody></table>
+  <h3>ภาคผนวก ง — ค่าเฉลี่ยรายเดือนตามปฏิทิน</h3>
+  <p class="src">ที่มา: <code>monthly_climatology.csv</code> ·
+  หน่วยเมตร · เฉลี่ยค่าของเดือนเดียวกันข้ามทุกปีในช่วง 1993-01 – 2024-12</p>
+  <table class="t "><caption>ตารางที่ ง.1 ค่าเฉลี่ย SLA รายเดือนตามปฏิทินของแต่ละสถานี</caption><thead><tr><th class='text'>เดือน</th><th>1. Wat Khun Samut Chin</th><th>2. Laem Chabang Port</th><th>3. Upper Gulf Offshore</th><th>4. Phetchaburi Bangkawe</th></tr></thead><tbody><tr><td class='text'><b>ม.ค.</b></td><td>+0.2062</td><td>+0.2123</td><td>+0.2163</td><td>+0.1985</td></tr><tr><td class='text'><b>ก.พ.</b></td><td>+0.1554</td><td>+0.1558</td><td>+0.1673</td><td>+0.1500</td></tr><tr><td class='text'><b>มี.ค.</b></td><td>+0.0993</td><td>+0.0979</td><td>+0.1043</td><td>+0.0940</td></tr><tr><td class='text'><b>เม.ย.</b></td><td>+0.0285</td><td>+0.0259</td><td>+0.0281</td><td>+0.0276</td></tr><tr><td class='text'><b>พ.ค.</b></td><td>-0.0478</td><td>-0.0549</td><td>-0.0550</td><td>-0.0420</td></tr><tr><td class='text'><b>มิ.ย.</b></td><td>-0.1303</td><td>-0.1377</td><td>-0.1420</td><td>-0.1201</td></tr><tr><td class='text'><b>ก.ค.</b></td><td>-0.1281</td><td>-0.1337</td><td>-0.1405</td><td>-0.1198</td></tr><tr><td class='text'><b>ส.ค.</b></td><td>-0.1306</td><td>-0.1320</td><td>-0.1384</td><td>-0.1177</td></tr><tr><td class='text'><b>ก.ย.</b></td><td>-0.1031</td><td>-0.0977</td><td>-0.0994</td><td>-0.0850</td></tr><tr><td class='text'><b>ต.ค.</b></td><td>+0.0326</td><td>+0.0447</td><td>+0.0567</td><td>+0.0561</td></tr><tr><td class='text'><b>พ.ย.</b></td><td>+0.1726</td><td>+0.1825</td><td>+0.1904</td><td>+0.1790</td></tr><tr><td class='text'><b>ธ.ค.</b></td><td>+0.2320</td><td>+0.2365</td><td>+0.2462</td><td>+0.2301</td></tr></tbody></table>
+  <h3>ภาคผนวก จ — พารามิเตอร์สุดท้ายของแต่ละแบบจำลอง</h3>
+  <p class="src">ที่มา: <code>model_settings.csv</code> ·
+  ค่าทั้งหมดถูกเลือกด้วยชุด Validation เท่านั้น ไม่แตะชุด Test</p>
+  <table class="t "><caption>ตารางที่ จ.1 โครงสร้างและพารามิเตอร์ที่ใช้จริง</caption><thead><tr><th class='text'>สถานี</th><th>แบบจำลอง</th><th>มิติข้อมูลเข้า</th><th>พารามิเตอร์หลัก</th></tr></thead><tbody><tr><td class='text'><b>Wat Khun Samut Chin</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>1D time series (univariate SLA)</td><td><span class="mono">order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>2D: samples × 11 features</td><td><span class="mono">n_estimators=200; max_features=0.5; min_samples_leaf=2; random_state=42</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>3D: samples × 12 timesteps × 7 features</td><td><span class="mono">single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=9</span></td></tr><tr><td class='text'><b>Laem Chabang Port</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>1D time series (univariate SLA)</td><td><span class="mono">order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>2D: samples × 11 features</td><td><span class="mono">n_estimators=300; max_features=sqrt; min_samples_leaf=1; random_state=42</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>3D: samples × 12 timesteps × 7 features</td><td><span class="mono">single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=8</span></td></tr><tr><td class='text'><b>Upper Gulf Offshore</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>1D time series (univariate SLA)</td><td><span class="mono">order=(1, 0, 0); seasonal_order=(0, 1, 1, 12)</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>2D: samples × 11 features</td><td><span class="mono">n_estimators=100; max_features=0.5; min_samples_leaf=1; random_state=42</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>3D: samples × 12 timesteps × 7 features</td><td><span class="mono">single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=29</span></td></tr><tr><td class='text'><b>Phetchaburi Bangkawe</b></td><td><span class="chip"><span class="sw" style="background:#008300"></span>SARIMA</span></td><td>1D time series (univariate SLA)</td><td><span class="mono">order=(1, 0, 2); seasonal_order=(0, 1, 1, 12)</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#9b4f96"></span>Random Forest</span></td><td>2D: samples × 11 features</td><td><span class="mono">n_estimators=200; max_features=0.5; min_samples_leaf=1; random_state=42</span></td></tr><tr><td class='text'></td><td><span class="chip"><span class="sw" style="background:#1baf7a"></span>LSTM</span></td><td>3D: samples × 12 timesteps × 7 features</td><td><span class="mono">single-layer LSTM; units=64; dropout=0.3; recurrent_dropout=0.2; batch_size=16; max_epochs=200; early_stopping_patience=15; seed=42; best_epoch=8</span></td></tr></tbody></table>
+  <h3>ภาคผนวก ฉ — คำศัพท์</h3>
+  <table class="t "><caption>ตารางที่ ฉ.1 คำศัพท์ที่ใช้ในระบบและในคู่มือ</caption><thead><tr><th class='text'>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td class='text'><b>SLA</b> — Sea Level Anomaly</td><td>ค่าความผิดปกติของระดับน้ำทะเล คือส่วนต่างของระดับน้ำจากค่าอ้างอิง ค่าบวกหมายถึงสูงกว่าค่าอ้างอิง</td></tr><tr><td class='text'><b>CMEMS</b></td><td>Copernicus Marine Service บริการข้อมูลสมุทรศาสตร์ของสหภาพยุโรป เป็นแหล่งข้อมูล SLA ของการศึกษานี้</td></tr><tr><td class='text'><b>ERA5</b></td><td>ชุดข้อมูลวิเคราะห์ย้อนหลังทางภูมิอากาศ ใช้เป็นตัวแปรอุตุนิยมวิทยาที่ป้อนแบบจำลอง</td></tr><tr><td class='text'><b>SARIMA</b></td><td>แบบจำลองอนุกรมเวลาที่มีทั้งส่วนแนวโน้มและส่วนฤดูกาล ใช้ข้อมูล SLA อย่างเดียว</td></tr><tr><td class='text'><b>Random Forest</b></td><td>แบบจำลองการเรียนรู้ของเครื่องแบบกลุ่มต้นไม้ตัดสินใจ ใช้ตัวแปรหลายตัวร่วมกัน</td></tr><tr><td class='text'><b>LSTM</b></td><td>โครงข่ายประสาทเทียมแบบวนซ้ำที่จดจำลำดับได้ยาว ใช้ข้อมูลย้อนหลัง 12 เดือนเป็นข้อมูลเข้า</td></tr><tr><td class='text'><b>Study Box</b></td><td>กล่อง ±0.25° รอบพิกัดสถานี ที่ใช้เฉลี่ยค่าเชิงพื้นที่ก่อนเข้าแบบจำลอง</td></tr><tr><td class='text'><b>1-step-ahead</b></td><td>การพยากรณ์ล่วงหน้าหนึ่งช่วงเวลา ในที่นี้คือหนึ่งเดือน</td></tr><tr><td class='text'><b>Train / Validation / Test</b></td><td>ชุดฝึก ชุดปรับพารามิเตอร์ และชุดทดสอบ ตามลำดับ ชุดทดสอบถูกใช้วัดผลครั้งเดียวตอนท้าย</td></tr><tr><td class='text'><b>Climatology</b></td><td>ค่าเฉลี่ยรายเดือนตามปฏิทิน ใช้ดูรูปแบบตามฤดูกาล</td></tr><tr><td class='text'><b>Residual</b></td><td>ค่าคลาดเคลื่อน คือค่าจริงลบค่าพยากรณ์</td></tr><tr><td class='text'><b>MDI</b></td><td>Mean Decrease in Impurity มาตรวัดความสำคัญของตัวแปรจากโครงสร้างต้นไม้</td></tr><tr><td class='text'><b>GeoJSON</b></td><td>รูปแบบไฟล์มาตรฐานสำหรับข้อมูลภูมิสารสนเทศ ใช้เก็บจุดสถานีและ Study Box</td></tr></tbody></table>
+</section>
+<section class="page-break end">
+  <h2 class="h2--plain">บันทึกท้ายเล่ม</h2>
+  <p>คู่มือฉบับนี้สร้างด้วยสคริปต์ <code>scripts/build_manual.py</code>
+  ซึ่งอ่านตัวเลขจากไฟล์ในโฟลเดอร์ <code>webapp/data/</code> โดยตรง
+  เมื่อข้อมูลของระบบเปลี่ยน ให้สร้างคู่มือใหม่ด้วยคำสั่งเดียวกัน
+  ตัวเลขในภาคผนวกจะเปลี่ยนตามเอง</p>
+  <dl class="kv"><div><dt>สร้างเมื่อ</dt><dd>09/09/2026 11:39</dd></div><div><dt>ที่มาของตัวเลข</dt><dd><code>webapp/data/</code> (10 ไฟล์)</dd></div><div><dt>โน้ตบุ๊กต้นทาง</dt><dd><code>SLA_predict_SARIMA_RF_LSTM.ipynb</code></dd></div><div><dt>โฟลเดอร์ผลการศึกษา</dt><dd><code>outputs_fair_comparison</code></dd></div><div><dt>ข้อมูลดิบ</dt><dd><code>Rawdata/sla_monthly_1993_2024.nc</code> · <code>Rawdata/era5_monthly_1993_2024.nc</code></dd></div></dl>
+  <h3>หมายเหตุประกอบการอ่านผลจากระบบ</h3>
+  <ol class="steps"><li>งานวิจัยพยากรณ์แบบ 1-step-ahead บนชุด Test (2020–2024) เท่านั้น ไม่ได้ผลิตค่าพยากรณ์ล่วงหน้าเลยปี 2024 forecast.csv จึงว่าง และหน้าเว็บแสดง N/A</li><li>แนวโน้มเชิงเส้นคำนวณจากอนุกรม SLA ที่แสดงบนกราฟด้วย np.polyfit(deg=1) ซึ่งเป็นวิธีเดียวกับ detrend_linear() ในโน้ตบุ๊ก เป็นสถิติเชิงพรรณนาของข้อมูล ไม่ใช่ผลลัพธ์ของแบบจำลอง</li><li>Mean / Min / Max / SD คำนวณจากอนุกรม SLA เต็มช่วง 1993-01 ถึง 2024-12 (384 เดือน) ของแต่ละสถานี</li></ol>
+</section>
+</body>
+</html>
